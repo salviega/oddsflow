@@ -5,7 +5,15 @@ import { useBook } from '@/hooks/useBook'
 import type { Market } from '@/lib/markets'
 
 /** Cheapest YES and NO a buyer can get on a market right now. */
-export function BestPrices({ markets, market }: { markets: readonly Market[]; market: string }) {
+export function BestPrices({
+	markets,
+	market,
+	compact = false,
+}: {
+	markets: readonly Market[]
+	market: string
+	compact?: boolean
+}) {
 	const book = useBook(markets)
 	const live = (book.data ?? []).filter((o) => o.market === market && o.status === 'active' && o.available > 0n)
 	// Buying YES fills orders buying NO at q: YES costs 1 - q. And the other way round.
@@ -17,6 +25,28 @@ export function BestPrices({ markets, market }: { markets: readonly Market[]; ma
 	const no = best('YES')
 	if (book.isPending) {
 		return <span className="text-mist">Reading orders…</span>
+	}
+	if (compact) {
+		if (yes === undefined && no === undefined) {
+			return <span className="text-mist">No OddsFlow orders</span>
+		}
+		return (
+			<span className="tabular-nums">
+				OddsFlow
+				{yes !== undefined && (
+					<>
+						{' '}
+						· <span className="text-yes">YES</span> {formatPrice(yes)}
+					</>
+				)}
+				{no !== undefined && (
+					<>
+						{' '}
+						· <span className="text-no">NO</span> {formatPrice(no)}
+					</>
+				)}
+			</span>
+		)
 	}
 	return (
 		<span className="tabular-nums">

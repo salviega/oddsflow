@@ -13,10 +13,16 @@ interface ISeerRouter {
 interface ISeerMarket {
     function conditionId() external view returns (bytes32);
     function numOutcomes() external view returns (uint256);
+    function questionsIds() external view returns (bytes32[] memory);
     function wrappedOutcome(uint256 index) external view returns (IERC20 wrapped1155, bytes memory data);
 }
 
 interface IConditionalTokens {
     /// @dev Zero until the condition's payouts are reported.
     function payoutDenominator(bytes32 conditionId) external view returns (uint256);
+}
+
+interface IRealityETH {
+    /// @dev Zero until the question gets its first answer.
+    function getFinalizeTS(bytes32 questionId) external view returns (uint32);
 }

@@ -35,9 +35,9 @@ describe('Gnosis addresses', () => {
 
 	it('has the Gnosis deployment from packages/contracts/deployments/100.json', () => {
 		const d = addresses.DEPLOYMENTS[addresses.CHAIN_ID]
-		expect(d?.router).toBe(getAddress('0xb8747b3e2f90154420165fb2fc4707d638797140'))
-		expect(d?.taker).toBe(getAddress('0xdd026ea05c9256a1162dc3d41102579458a804cd'))
-		expect(d?.fromBlock).toBe(48438501n)
+		expect(d?.router).toBe(getAddress('0xfa92a297ec2ccc8ec010aca475f07240e2d47dec'))
+		expect(d?.taker).toBe(getAddress('0xbb9aa4e736b49e490c774dd674da88a38e89a678'))
+		expect(d?.fromBlock).toBe(48438751n)
 	})
 
 	it('has the fork deployment at the addresses dev-fork.sh produces', () => {

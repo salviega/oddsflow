@@ -13,13 +13,13 @@ Cada una con lo que se descartó y por qué. Las tres primeras vienen del [03](.
 | --- | --- | --- | --- |
 | Red | **Gnosis Chain** (desde el 26 de septiembre). Pruebas sobre un fork de Gnosis | Base mainnet (primer despliegue) · testnets | En Base no quedaba ningún mercado de Seer operable salvo los nuestros; Gnosis tiene 131 binarios abiertos. Aqua no tiene testnets ([03](./03_bounties.md#marco), [feedback](../feedback/01_1inch.md)) |
 | Motor de la orden | **Aqua oficial** (`0x1111113c…a90a`) + **router de SwapVM propio**: `AquaSwapVMRouter` del tag `v1.0.2` con dos opcodes nuevos | Router oficial con `Extruction` · `LimitSwap` · `AquaApp` propio | El router oficial no tiene precio fijo y `LimitSwap` no sirve sobre saldos de Aqua ([03 §1](./03_bounties.md#1-1inch--build-an-aqua-app)). `Extruction` en el oficial queda como plan B |
-| Programa de una orden | `OnlyUnresolvedCondition(conditionId)` → `Deadline(vencimiento)` → `FixedPriceSwap(precio, tokenResultado → sDAI)` → `Salt` | Varias órdenes en una sola estrategia | Una orden por estrategia: cancelar una es un `dock` que no toca las demás, y cada una tiene su tope en su propio saldo virtual. `Salt` evita que dos órdenes idénticas tengan el mismo `strategyHash` |
+| Programa de una orden | `OnlyUnresolvedCondition(conditionId)` → `OnlyUnansweredQuestion(questionId)` → `Deadline(vencimiento)` → `FixedPriceSwap(precio, tokenResultado → sDAI)` → `Salt` | Varias órdenes en una sola estrategia | Una orden por estrategia: cancelar una es un `dock` que no toca las demás, y cada una tiene su tope en su propio saldo virtual. `Salt` evita que dos órdenes idénticas tengan el mismo `strategyHash` |
 | Versión de SwapVM | **Tag `v1.0.2`**, el ABI desplegado: `swap(order, tokenIn, tokenOut, amount, takerData)` | `main` | `main` cambió la firma de `swap` y el layout de fuentes ([feedback](../feedback/01_1inch.md)). El tag permite comparar nuestro router con el oficial línea por línea: la única diferencia son los dos opcodes |
 | Compra con creación de tokens | **`OddsFlowTaker`**, un contrato que hace de taker en SwapVM: recorre órdenes, junta los aportes, hace el split en Seer y reparte | Que la interfaz encadene varias transacciones | El [04](./04_diseno-de-solucion.md#42-contraparte-comprar-un-lado) promete una sola transacción y "todo o nada". Solo un contrato puede juntar el sDAI del maker y el de la contraparte antes del split |
 | Venta de tokens existentes | El vendedor llama al router directamente, o vía `OddsFlowTaker` para recorrer varias órdenes | Un camino exclusivo de OddsFlow | La orden no distingue quién la llena ([04 §4.3](./04_diseno-de-solucion.md#43-vendedor-vender-tokens-a-una-orden)) |
 | Publicar y cancelar | La wallet del apostador llama a `aqua.ship` y `aqua.dock` **directamente**. Varias órdenes en una confirmación con `wallet_sendCalls` (EIP-5792) cuando la wallet lo admite | Un contrato de OddsFlow que publique en nombre del apostador | Aqua toma como maker a `msg.sender` de `ship`: un intermediario sería el maker y el sDAI se pediría a él. Ver §5 |
 | Libro de órdenes | **Eventos de Aqua** (`Shipped`, `Docked`) filtrados por `app == router de OddsFlow`, decodificados en `packages/core` | Subgraph o backend propio | `Shipped` trae el programa completo. Nada que guardar que no esté ya en la cadena |
-| Mercado de la demo | **Un mercado binario creado por nosotros** en Seer, con `MarketFactory` en Gnosis | Mercados existentes | Controlamos la pregunta, la fecha de apertura a respuestas y la resolución, así que la demo puede llegar hasta el cobro. Los mercados existentes siguen funcionando igual |
+| Lista de mercados | **API pública de Seer** (`markets-search`, la que usa app.seer.pm), leída por el servidor cada 5 minutos, filtrada a SÍ/NO simples sobre sDAI sin respuesta, con búsqueda y paginado propios | Escanear la fábrica en la cadena · el indexador GraphQL de Envio | La cadena no da probabilidades, liquidez ni imágenes, y escanear 1.590 mercados es lento. Si la API cae, la lista queda vacía pero se sigue operando desde la página de cada mercado, que lee la cadena |
 | Estado propio | **Ninguno** | Base de datos de órdenes o llenados | Todo vive en Aqua, en el router, en Seer y en Reality.eth. Cada dato fuera de la cadena es un dato que puede mentir |
 | Repositorio | **Monorepo**: contratos, núcleo en TypeScript y web | Repos separados | Un solo historial de commits (lo mira 1inch), un solo `install`, y el mismo código construye un programa en TypeScript y lo verifica contra Solidity |
 
@@ -114,7 +114,7 @@ Es la regla del [04 §6](./04_diseno-de-solucion.md#6-reglas-de-negocio). Se gar
 
 **d) El token que recibe llega en la misma transacción, o no pasa nada.** En `v1.0.2`, después de sacar el sDAI del maker, el router exige que el saldo virtual del token de entrada haya subido en `amountIn`: si no, revierte con `AquaBalanceInsufficientAfterTakerPush`. Y `push` en Aqua transfiere ese token directo a la wallet del maker. Además, `safeBalances` revierte si el token no es de la estrategia, así que solo el token exacto de ese mercado y lado sirve (regla 6 del [04](./04_diseno-de-solucion.md#6-reglas-de-negocio)).
 
-**e) Nada con el mercado resuelto ni después del vencimiento.** `OnlyUnresolvedCondition` revierte si `payoutDenominator(conditionId) > 0`; `Deadline` revierte pasado el vencimiento. Van antes de `FixedPriceSwap` en el programa, así que también cortan el `quote`.
+**e) Nada con la pregunta respondida, el mercado resuelto, ni después del vencimiento.** `OnlyUnansweredQuestion` revierte si Reality.eth ya tiene una respuesta (`getFinalizeTS(questionId) != 0`); `OnlyUnresolvedCondition` revierte si `payoutDenominator(conditionId) > 0`; `Deadline` revierte pasado el vencimiento. Van antes de `FixedPriceSwap`, así que también cortan el `quote`. La guarda de la respuesta reemplaza a la regla original de vencer en la apertura de la pregunta: en Seer esa fecha es muy anterior al evento.
 
 **Cómo se verifica.** Pruebas de contratos sobre un fork de Gnosis que intentan lo prohibido y esperan que falle:
 
@@ -224,7 +224,7 @@ Ordenados por cuánto daño hacen si se materializan.
 | Conditional Tokens | `0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce` |
 | Reality.eth | `0xE78996A233895bE74a66F451f1019cA9734205cc` |
 | Router SwapVM oficial (referencia, no se usa) | `0x111111338c5091e8440b67b168bae16a668ac0de` |
-| Router SwapVM de OddsFlow | `0xB8747B3e2F90154420165FB2fc4707D638797140` (bloque 48438501) |
-| `OddsFlowTaker` | `0xdD026eA05C9256A1162dC3d41102579458A804Cd` |
+| Router SwapVM de OddsFlow | `0xfA92A297eC2cCC8Ec010ACa475F07240e2D47deC` (bloque 48438751), con `OnlyUnansweredQuestion` |
+| `OddsFlowTaker` | `0xbB9Aa4e736B49E490C774dd674da88A38e89a678` |
 
 Los mismos dos contratos existen en Base en las mismas direcciones (la cuenta de despliegue tenía nonce 0 en ambas redes), desplegados antes de la mudanza y sin uso.

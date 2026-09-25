@@ -44,7 +44,8 @@ Lo que OddsFlow necesita saber de un mercado de Seer. No se crea: se lee.
 | `pregunta` | texto | `marketName()` |
 | `tokenSi`, `tokenNo` | ERC20 | Outcomes 0 y 1 de Seer |
 | `tokenInvalido` | ERC20 | Outcome 2. **Todo mercado binario de Seer tiene un tercer token "resultado inválido"**: el split entrega tres tokens, no dos (verificado en Gnosis) |
-| `aperturaRespuestas` | fecha | Momento desde el que Reality.eth acepta respuestas. Límite duro para el vencimiento de cualquier orden |
+| `aperturaRespuestas` | fecha | Momento desde el que Reality.eth acepta respuestas. Informativo: lo que corta las órdenes es la primera respuesta (`preguntaRespondida`) |
+| `preguntaRespondida` | sí / no | Reality.eth ya tiene al menos una respuesta. Desde ese momento ninguna orden del mercado se llena |
 | `estado` | enum | `abierto` · `en resolución` · `resuelto` |
 
 ### Orden
@@ -59,7 +60,7 @@ Una orden = una estrategia de Aqua. Se identifica por su `strategyHash`.
 | `precioMax` | decimal 0.01–0.99 | sDAI por token de resultado. Un token ganador vale 1 sDAI |
 | `tope` | sDAI | Máximo que esta orden puede gastar en total. Es el saldo virtual de la estrategia en Aqua. Cada orden puede declarar todo el saldo (así funciona el saldo compartido) |
 | `llenado` | sDAI | Acumulado ya gastado. Nunca supera `tope` |
-| `vencimiento` | fecha | ≤ `aperturaRespuestas` del mercado |
+| `vencimiento` | fecha | Lo elige el apostador (1–365 días; por defecto 7). La orden además deja de llenarse con la primera respuesta a la pregunta |
 | `estado` | enum | Ver §6 |
 
 ### Llenado
@@ -88,7 +89,7 @@ No es una entidad guardada: es el saldo de tokens SÍ / NO / inválido de una wa
 1. Conecta su wallet en Gnosis. Ve su saldo de sDAI.
 2. **Primera vez:** aprueba sDAI a Aqua. Es la única aprobación que va a firmar nunca.
 3. Elige uno o varios mercados. En cada uno: lado, precio máximo y tope. Ejemplo: SÍ a 0.20 en el mercado A con tope 1.000 sDAI, y SÍ a 0.25 en el B con tope 1.000 sDAI, teniendo 1.000 sDAI en la wallet.
-4. La pantalla le muestra, antes de firmar: vencimiento de cada orden (por defecto, la apertura de respuestas del mercado), y el aviso del [02](./02_solucion.md#qué-resuelve): si se llenan varias a la vez por más de lo que tiene, las últimas fallan.
+4. La pantalla le muestra, antes de firmar: vencimiento de cada orden (lo elige, por defecto 7 días) y que deja de llenarse con la primera respuesta a la pregunta, y el aviso del [02](./02_solucion.md#qué-resuelve): si se llenan varias a la vez por más de lo que tiene, las últimas fallan.
 5. Publica. Cada orden es una transacción `ship` en Aqua: paga gas, **no mueve sDAI**. Si la wallet admite envíos agrupados, todas las órdenes van en una sola confirmación; si no, una por orden.
 6. Las órdenes aparecen como `activa` en su panel.
 
@@ -141,7 +142,7 @@ No es una entidad guardada: es el saldo de tokens SÍ / NO / inválido de una wa
 | Pantalla | Qué muestra | Acción principal |
 | --- | --- | --- |
 | **Mercados** | Mercados binarios abiertos de Seer en Gnosis, con el mejor precio de SÍ y de NO que ofrecen las órdenes de OddsFlow, como probabilidad (0.20 = 20 %) | Abrir un mercado |
-| **Mercado** | Pregunta, fecha de apertura de respuestas, órdenes por lado con su precio y cuánto pueden cubrir hoy | Comprar un lado (flujo 4.2) o vender tokens que ya tiene (4.3) |
+| **Mercado** | Pregunta, desde cuándo acepta respuestas y si ya tiene alguna, órdenes por lado con su precio y cuánto pueden cubrir hoy | Comprar un lado (flujo 4.2) o vender tokens que ya tiene (4.3) |
 | **Nuevas órdenes** | Lista editable de mercado · lado · precio · tope, y el saldo real de sDAI debajo | Publicar las órdenes (flujo 4.1) |
 | **Mis órdenes** | Cada orden con estado, llenado / tope, vencimiento y cuánto podría cubrir hoy con el saldo real | Cancelar una orden |
 | **Posiciones** | Tokens SÍ / NO / inválido por mercado, y cuáles ya se pueden canjear | Cobrar |
@@ -170,7 +171,9 @@ La aprobación de sDAI a Aqua no es una pantalla: aparece como primer paso dentr
 1. **Nunca peor que el precio firmado.** Por cada token de resultado que recibe, el apostador paga como máximo `precioMax` sDAI.
 2. **Una sola dirección.** La orden entrega sDAI a cambio de tokens de resultado, nunca al revés. Si no, cualquiera podría comprarle al apostador los tokens SÍ que ya recibió.
 3. **Tope acumulado.** La suma de todos los llenados de una orden nunca supera su `tope`.
-4. **Nada después del vencimiento ni con el mercado resuelto**, y el vencimiento nunca es posterior a la apertura de respuestas del mercado.
+4. **Nada después del vencimiento, con el mercado resuelto, ni desde la primera respuesta a su pregunta en Reality.eth.**
+
+   **Cambio del 26 de septiembre.** La primera versión de esta regla hacía vencer toda orden en la apertura de la pregunta a respuestas. En Seer esa fecha suele ser muy anterior al evento (una pregunta sobre 2027 acepta respuestas desde 2026), así que la regla dejaba afuera a los 208 mercados operables. Lo que de verdad protege al apostador es cortar en cuanto aparece una respuesta: el opcode `OnlyUnansweredQuestion` rechaza todo llenado desde la primera respuesta en Reality.eth, que llega días antes de que el resultado sea final.
 5. **Todo o nada.** El sDAI del apostador sale y sus tokens llegan en la misma transacción. En la creación, además, el aporte de la contraparte, el split y la entrega a cada uno. Si falta cualquiera, no pasa ninguno.
 6. **Token exacto.** La orden solo acepta el token de su mercado y su lado. No importa de dónde venga: todo token de resultado de Seer está respaldado 1:1 por colateral desde que existe.
 7. **Inválido en proporción al aporte, cuando hay creación.** Si los tokens se crean en el llenado, los inválidos se reparten según lo que puso cada uno, y si el mercado se anula cada uno recupera exactamente lo suyo. En una venta, el apostador recibe solo su lado, igual que si comprara en cualquier otro lugar.
@@ -202,12 +205,12 @@ La aprobación de sDAI a Aqua no es una pantalla: aparece como primer paso dentr
 - Una orden = una estrategia de Aqua, con el saldo compartido entre todas.
 - Precio fijo con un opcode propio, `FixedPriceSwap`, en un router de SwapVM redesplegado sobre el Aqua oficial: el router oficial no tiene precio fijo y `LimitSwap` no sirve sobre saldos de Aqua ([03](./03_bounties.md#1-1inch--build-an-aqua-app)).
 - Publicar es una transacción `ship` por orden, agrupadas en una sola confirmación cuando la wallet lo admite.
-- Vencimiento por `Deadline`, por defecto en la apertura de respuestas del mercado, más el opcode `OnlyUnresolvedCondition`, que rechaza si el mercado ya está resuelto.
+- Vencimiento por `Deadline`, elegido por el apostador, más `OnlyUnresolvedCondition` (mercado resuelto) y `OnlyUnansweredQuestion` (pregunta con respuesta).
 - Una orden se puede llenar de dos formas: creación de tokens (contraparte con sDAI) o venta (quien ya tiene tokens).
 - Una compra recorre varias órdenes, de la más barata a la más cara, con un mínimo que fija la contraparte.
 - Los tokens inválidos se reparten en proporción al aporte cuando hay creación.
 - Precios como probabilidad; montos en sDAI con el dólar como referencia.
-- La demo usa un mercado binario creado por nosotros en Seer, para controlar la pregunta, la apertura a respuestas y la resolución ([05](./05_stack-y-arquitectura.md#1-decisiones)).
+- La demo usa mercados reales de Seer en Gnosis (la lista sale de la API pública de Seer, con búsqueda y paginado; ver [05](./05_stack-y-arquitectura.md#1-decisiones)).
 - El libro de órdenes se arma con los eventos `Shipped` de Aqua, que incluyen el programa completo de cada orden: cualquiera puede reconstruirlo desde la cadena.
 
 **Pendientes:**

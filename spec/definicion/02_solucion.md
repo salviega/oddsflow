@@ -33,7 +33,7 @@ Compite contra la forma actual de apostar a un precio: depositar o reservar capi
 
 **4. Ejecutarse.** Cuando aparece alguien dispuesto a darle su lado a ese precio, en una sola transacción el apostador paga y recibe sus tokens. Los tokens llegan de una de dos formas: se crean en ese momento, juntando su dinero con el de quien quiere el lado contrario, o se los vende alguien que ya los tenía. En las dos paga como máximo su precio. Lo que se usó sale de su wallet, así que sus otras órdenes cuentan con ese saldo menos.
 
-**5. Cerrar.** Cada orden vence, como tarde, cuando el mercado empieza a aceptar respuestas, y se niega a ejecutarse si el mercado ya está resuelto. Nadie puede venderle tokens de un resultado ya reportado.
+**5. Cerrar.** Cada orden vence cuando elige el apostador, y deja de llenarse en el mismo momento en que alguien publica una respuesta a la pregunta del mercado en Reality.eth, o si el mercado ya está resuelto. Nadie puede venderle tokens de un resultado que ya tiene respuesta.
 
 **6. Cobrar.** Si acertó, canjea sus tokens ganadores por el colateral. Si el mercado se anula, recupera lo que corresponda por sus tokens de resultado inválido.
 
@@ -67,4 +67,4 @@ Límites a tener en cuenta:
 - **Mercados:** binarios (SÍ/NO) de **Seer**, cuyos tokens de resultado ya son ERC20.
 - **Red:** **Gnosis Chain**, donde coinciden Aqua y los mercados activos de Seer ([03](./03_bounties.md#marco)).
 - **Colateral:** **sDAI**, el que usan los mercados de Seer en Gnosis (verificado onchain, ver [03](./03_bounties.md)). El apostador y la contraparte operan en sDAI; convertir desde USDC queda fuera de este alcance.
-- **Órdenes:** compra de SÍ o NO a precio máximo, con tope de monto y vencimiento, como tarde, al abrir el mercado a respuestas.
+- **Órdenes:** compra de SÍ o NO a precio máximo, con tope de monto y vencimiento elegido por el apostador; se cortan solas con la primera respuesta a la pregunta.
