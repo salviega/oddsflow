@@ -113,7 +113,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | `NEXT_PUBLIC_SITE_URL` | Web (canonical, Open Graph, sitemap) | Sin ella, `https://oddsflow.vercel.app` ([09 §10](./09_marca-y-seo.md#10-pendientes)) |
 | `NEXT_PUBLIC_DEMO_MARKET` | Web (portada) | El mercado de la demo, primero en la lista |
 
-**La llave de despliegue no vive en `.env`.** Se importa una sola vez con `cast wallet import deployer --interactive` al keystore cifrado de Foundry, y los scripts usan `--account deployer`. Es dinero real en Base.
+**La llave de despliegue vive en el `.env` de la raíz** (`DEPLOYER_PRIVATE_KEY`, gitignorado), por decisión del 26 de septiembre: la cuenta `0x5b1d…8258` es de uso exclusivo para desplegar y se fondea solo con lo que cuesta (menos de 0,001 ETH). Reemplaza al keystore cifrado de Foundry que planteaba la primera versión de este documento. La regla que no cambia: la llave nunca entra a un archivo versionado ni a una variable `NEXT_PUBLIC_`.
 
 **Las direcciones no son variables de entorno.** Las de Base (Aqua, sUSDS, Seer, Reality.eth, nuestro router y `OddsFlowTaker`) y el bloque de despliegue del router viven en `packages/core/src/addresses.ts`, versionadas: cambiar una dirección es un commit, no un ajuste de hosting.
 
