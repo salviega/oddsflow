@@ -1,15 +1,6 @@
-<!-- [ADAPTAR] MIT es el default razonable para un repo de hackathon que se
-     declara "open source" ante los jueces (varios tracks lo piden
-     explícito). Cambia el año y el titular del copyright; cambia la
-     licencia entera si el hackathon exige otra cosa (Apache-2.0, GPL) o si
-     prefieres no dar permiso de uso comercial (revisa alternativas como
-     PolyForm). Borra este comentario al llenar los datos reales — un
-     comentario HTML no rompe el archivo, pero tampoco pertenece en un
-     LICENSE final. -->
-
 MIT License
 
-Copyright (c) [AÑO] [TITULAR DEL COPYRIGHT]
+Copyright (c) 2026 salviega and the OddsFlow contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
