@@ -104,7 +104,7 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 **Objetivo:** OddsFlow funcionando en Base mainnet, con un llenado real que cualquiera pueda comprobar en el explorador.
 
-- Desplegar el router y `OddsFlowTaker` en Base, verificados en Basescan y en Sourcify. Direcciones y bloque de despliegue a `packages/core/src/addresses.ts`.
+- ~~Desplegar el router y `OddsFlowTaker` en Base, verificados en Basescan y en Sourcify. Direcciones y bloque de despliegue a `packages/core/src/addresses.ts`.~~ Sábado 26, 06:59 JST: router `0xB874…7140` y taker `0xdD02…04Cd`, verificados, propiedad del router renunciada. Mercados de la demo `0xf2Bf…08Da` y `0x2f15…B57E`.
 - Desplegar la web en Vercel con `NEXT_PUBLIC_SITE_URL`.
 - **El flujo completo en Base, con dinero real y montos chicos:** el apostador publica dos órdenes (SÍ en el mercado de la demo y en uno existente) con una sola confirmación; la contraparte compra NO desde otra wallet y llena una de ellas; lo que puede cubrir la otra orden baja en la misma transacción; el apostador cancela la segunda.
 - Checklist de SEO del [09 §8](./09_marca-y-seo.md#8-seo): Lighthouse, `view-source`, vista previa en X y en Discord.

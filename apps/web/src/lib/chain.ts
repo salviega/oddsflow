@@ -38,10 +38,11 @@ export function deployment(): Deployment | undefined {
 	return { ...d, fromBlock }
 }
 
-/** Markets shown first: the demo market, then the rest. */
+/** Markets shown first: the demo markets (comma-separated), then the rest. */
 export const featuredMarkets: Address[] = [process.env.NEXT_PUBLIC_FORK_MARKET, process.env.NEXT_PUBLIC_DEMO_MARKET]
-	.filter((a): a is string => Boolean(a))
-	.map((a) => a as Address)
+	.flatMap((v) => (v ? v.split(',') : []))
+	.map((a) => a.trim())
+	.filter((a): a is Address => /^0x[0-9a-fA-F]{40}$/.test(a))
 
 export function explorerTx(hash: string): string | undefined {
 	return isFork ? undefined : `https://basescan.org/tx/${hash}`

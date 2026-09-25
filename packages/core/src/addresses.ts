@@ -35,12 +35,17 @@ export type Deployment = {
 }
 
 /**
- * OddsFlow's own contracts, per chain. Base mainnet is added when
- * `pnpm deploy:base` runs. The fork addresses are fixed because
+ * OddsFlow's own contracts, per chain. The fork addresses are fixed because
  * scripts/dev-fork.sh resets the deployer's nonce before deploying; its
  * fromBlock depends on the fork and comes from the web's environment.
  */
 export const DEPLOYMENTS: Partial<Record<number, Deployment>> = {
+	// Deployed 2026-09-26, verified on Basescan; router ownership renounced.
+	[BASE_CHAIN_ID]: {
+		router: '0xB8747B3e2F90154420165FB2fc4707D638797140',
+		taker: '0xdD026eA05C9256A1162dC3d41102579458A804Cd',
+		fromBlock: 51792181n,
+	},
 	[FORK_CHAIN_ID]: {
 		router: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
 		taker: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',

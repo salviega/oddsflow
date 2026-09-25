@@ -26,6 +26,20 @@ Versioning cadence, while pre-1.0:
 
 ### Added
 
+- OddsFlow on Base mainnet. `OddsFlowRouter` at
+  [`0xB874…7140`](https://basescan.org/address/0xB8747B3e2F90154420165FB2fc4707D638797140)
+  (tx [`0xdd1a…eeda`](https://basescan.org/tx/0xdd1affa2fe922dda56f32086db78b191c2008d3113371f7cf15d04034901eeda)),
+  ownership renounced in tx [`0x8612…5603`](https://basescan.org/tx/0x8612648c851048c1778215dec02e3385a63b13c6f4358571b28c76c9adfc5603);
+  `OddsFlowTaker` at
+  [`0xdD02…04Cd`](https://basescan.org/address/0xdD026eA05C9256A1162dC3d41102579458A804Cd)
+  (tx [`0xd184…1c95`](https://basescan.org/tx/0xd18480fa7b18c9c2ca1fd586c80699a3bc8f98d271d053efd3784e08e2051c95)).
+  Both verified on Basescan. Demo markets on Seer:
+  [`0xf2Bf…08Da`](https://basescan.org/tx/0x855fdfbb3e657cb94c3076f47b719a9129ecd8f054460936af6d4b63298a268b)
+  ("Will OddsFlow win a prize at ETHGlobal Tokyo 2026?") and
+  [`0x2f15…B57E`](https://basescan.org/tx/0x1ee0c66867ce3df6e802b73d28de9634a3967e6dc254aa9058da1e39e5f71631)
+  ("Will ETH trade above $2,500 at 00:00 JST on 28 September 2026?"), both
+  opening to answers on Monday 28 September, 00:00 JST.
+
 - `FixedPriceSwap` opcode: a limit-order price for Aqua strategies, taken from
   the instruction's arguments instead of the balance registers, with rounding
   in the maker's favour and a single allowed direction. Evidence:

@@ -32,6 +32,13 @@ describe('Base addresses', () => {
 		expect(addresses.BASE_CHAIN_ID).toBe(8453)
 	})
 
+	it('has the Base deployment from packages/contracts/deployments/8453.json', () => {
+		const base = addresses.DEPLOYMENTS[addresses.BASE_CHAIN_ID]
+		expect(base?.router).toBe(getAddress('0xb8747b3e2f90154420165fb2fc4707d638797140'))
+		expect(base?.taker).toBe(getAddress('0xdd026ea05c9256a1162dc3d41102579458a804cd'))
+		expect(base?.fromBlock).toBe(51792181n)
+	})
+
 	it('has the fork deployment at the addresses dev-fork.sh produces', () => {
 		const fork = addresses.DEPLOYMENTS[addresses.FORK_CHAIN_ID]
 		expect(fork?.router).toBe(getAddress('0x5fbdb2315678afecb367f032d93f642f64180aa3'))
