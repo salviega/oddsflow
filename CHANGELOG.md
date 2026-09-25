@@ -61,6 +61,13 @@ Versioning cadence, while pre-1.0:
 
 ### Added
 
+- New orders as a visual builder: pick markets from searchable tiles with
+  Seer's odds, set each price by dragging the gate on its own gauge (mouse,
+  touch or keyboard) against Seer's odds as a dashed reference, with a
+  sticky panel that shows every order drawing on the same balance. Create
+  market gets templates, answer-date presets, a live question checklist and
+  a live preview of its card.
+
 - Create market page: anyone can open a YES/NO market on Seer (Gnosis, sDAI)
   from OddsFlow with their own wallet, through Seer's permissionless
   `MarketFactory`, and land on its page to place orders. Evidence: created
