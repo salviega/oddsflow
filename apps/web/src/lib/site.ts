@@ -3,7 +3,15 @@
 export const site = {
 	name: 'OddsFlow',
 	shortName: 'OddsFlow',
-	url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oddsflow.vercel.app',
+	// The canonical URL and Open Graph image must live on a public domain:
+	// Vercel protects its per-team and per-branch aliases with a login, and a
+	// link preview that meets a login shows nothing. So: the explicit URL, else
+	// the production domain Vercel reports, else ours.
+	url:
+		process.env.NEXT_PUBLIC_SITE_URL ??
+		(process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+			? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
+			: 'https://oddsflow-teal.vercel.app'),
 	repo: 'https://github.com/salviega/oddsflow',
 	locale: 'en_US',
 

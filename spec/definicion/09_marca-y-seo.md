@@ -219,6 +219,6 @@ Estos archivos se crearon antes que la app de Next. La fase 0 del [07](./07_plan
 
 ## 10. Pendientes
 
-- **Dominio.** Hasta tener uno, `NEXT_PUBLIC_SITE_URL` cae a `https://oddsflow.vercel.app`. Hay que confirmar que ese subdominio de Vercel esté libre al crear el proyecto; si no, cambiar el valor por defecto en `site.ts`.
+- ~~**Dominio.**~~ Producción en `https://oddsflow-teal.vercel.app` (`oddsflow.vercel.app` ya estaba tomado). **Lección del 26 de septiembre:** el primer despliegue apuntó el canonical y `og:image` a `oddsflow-santiago-a-viana-vs-projects.vercel.app`, un alias que Vercel protege con login; WhatsApp encontró el login en vez de la imagen y no mostró la tarjeta. `site.ts` ahora cae a la URL de producción que informa Vercel si falta `NEXT_PUBLIC_SITE_URL`.
 - **OG por mercado.** Una imagen generada por página de mercado (pregunta y precio sobre la escala) con `ImageResponse` de Next. Mejora la vista previa al compartir un mercado; no es necesaria para la demo.
 - **Dirección visual de las pantallas.** El kit fija color, tipo y voz; la composición de las cinco pantallas del [04](./04_diseno-de-solucion.md#5-pantallas) (densidad, qué va arriba) se decide al empezar la fase de la web, con dos direcciones propuestas antes de construir una.

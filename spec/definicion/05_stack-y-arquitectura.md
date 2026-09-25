@@ -224,5 +224,5 @@ Ordenados por cuánto daño hacen si se materializan.
 | Conditional Tokens | `0xAb797C4C6022A401c31543E316D3cd04c67a87fC` |
 | Reality.eth | `0x2F39f464d16402Ca3D8527dA89617b73DE2F60e8` |
 | Router SwapVM oficial (referencia, no se usa) | `0x111111338c5091e8440b67b168bae16a668ac0de` |
-| Router SwapVM de OddsFlow | _por desplegar_ |
-| `OddsFlowTaker` | _por desplegar_ |
+| Router SwapVM de OddsFlow | `0xB8747B3e2F90154420165FB2fc4707D638797140` (bloque 51792181) |
+| `OddsFlowTaker` | `0xdD026eA05C9256A1162dC3d41102579458A804Cd` |
