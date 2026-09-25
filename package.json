@@ -11,11 +11,11 @@
 		"check": "biome check .",
 		"typecheck": "pnpm -r typecheck",
 		"test": "vitest run --coverage",
-		"coverage:contracts": "cd packages/contracts && forge coverage --ir-minimum --fork-url base --skip \"test/Invariants.fork.t.sol\" --report summary --no-match-coverage \"(test|script|lib)/\" | node ../../scripts/check-coverage.mjs 90",
+		"coverage:contracts": "cd packages/contracts && set -a && . ../../.env && set +a && forge coverage --ir-minimum --fork-url base --skip \"test/Invariants.fork.t.sol\" --report summary --no-match-coverage \"(test|script|lib)/\" | node ../../scripts/check-coverage.mjs 90",
 		"abis": "node scripts/export-abis.mjs && biome format --write packages/core/src/abis/generated.ts",
-		"test:contracts": "cd packages/contracts && forge test --fork-url base",
-		"deploy:base": "cd packages/contracts && forge script script/Deploy.s.sol --rpc-url base --account deployer --broadcast --verify",
-		"demo:market": "cd packages/contracts && forge script script/CreateDemoMarket.s.sol --rpc-url base --account deployer --broadcast"
+		"test:contracts": "cd packages/contracts && set -a && . ../../.env && set +a && forge test --fork-url base",
+		"deploy:base": "cd packages/contracts && set -a && . ../../.env && set +a && forge script script/Deploy.s.sol --rpc-url base --account deployer --broadcast --verify",
+		"demo:market": "cd packages/contracts && set -a && . ../../.env && set +a && forge script script/CreateDemoMarket.s.sol --rpc-url base --account deployer --broadcast"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",

@@ -102,12 +102,16 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 ## 7. Variables de entorno
 
+**Un solo archivo para todo el monorepo:** `.env` en la raíz (gitignorado), con la plantilla en `.env.example`. Los scripts de contratos lo cargan antes de llamar a Foundry, la web lo carga desde `next.config.ts` con `@next/env`, y `scripts/dev-fork.sh` también lo lee. El fork local escribe sus variables en `.env.local`, también en la raíz, que tiene prioridad.
+
 | Variable | Dónde se usa | Notas |
 | --- | --- | --- |
-| `BASE_RPC_URL` | `packages/contracts/.env` (fork y despliegue; Foundry lo carga solo), CI | Sensible: lleva la API key. En CI es el secreto `BASE_RPC_URL`, pasado como variable de entorno porque las pruebas lo leen con `vm.rpcUrl("base")`. Plantilla en `packages/contracts/.env.example` |
-| `NEXT_PUBLIC_BASE_RPC_URL` | `apps/web` | Pública por definición: usar una key restringida por dominio |
-| `ETHERSCAN_API_KEY` | `packages/contracts` (verificación) | Sensible |
-| `NEXT_PUBLIC_SITE_URL` | `apps/web/src/lib/site.ts` (canonical, Open Graph, sitemap) | Pública. Sin ella, `https://oddsflow.vercel.app` ([09 §10](./09_marca-y-seo.md#10-pendientes)) |
+| `BASE_RPC_URL` | Contratos (fork, despliegue), `dev-fork.sh`, CI | Sensible: lleva la API key. En CI es el secreto `BASE_RPC_URL`, pasado como variable de entorno porque las pruebas lo leen con `vm.rpcUrl("base")` |
+| `ETHERSCAN_API_KEY` | `pnpm deploy:base` (verificación) | Sensible |
+| `DEMO_MARKET_NAME` | `pnpm demo:market` | La pregunta del mercado a crear. Entre comillas: lleva espacios |
+| `NEXT_PUBLIC_BASE_RPC_URL` | Web | Pública por definición: usar una key restringida por dominio |
+| `NEXT_PUBLIC_SITE_URL` | Web (canonical, Open Graph, sitemap) | Sin ella, `https://oddsflow.vercel.app` ([09 §10](./09_marca-y-seo.md#10-pendientes)) |
+| `NEXT_PUBLIC_DEMO_MARKET` | Web (portada) | El mercado de la demo, primero en la lista |
 
 **La llave de despliegue no vive en `.env`.** Se importa una sola vez con `cast wallet import deployer --interactive` al keystore cifrado de Foundry, y los scripts usan `--account deployer`. Es dinero real en Base.
 

@@ -3,7 +3,7 @@
 # the demo market created, test accounts funded with sUSDS and sample orders
 # published. Then run `pnpm dev:fork` in another terminal.
 #
-#   scripts/dev-fork.sh   (reads BASE_RPC_URL from packages/contracts/.env)
+#   scripts/dev-fork.sh   (reads BASE_RPC_URL from the root .env)
 set -eu
 
 RPC=http://127.0.0.1:8545
@@ -14,8 +14,8 @@ WHALE=0x1601843c5E9bC251A3272907010AFa41Fa18347E # holds >1M sUSDS on Base
 ACCOUNTS="0x70997970C51812dc3A010C7d01b50e0d17dc79C8 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC 0x90F79bf6EB2c4f870365E785982E1f101E93b906"
 
 cd "$(dirname "$0")/../packages/contracts"
-# BASE_RPC_URL from the environment, or from packages/contracts/.env
-[ -z "${BASE_RPC_URL:-}" ] && [ -f .env ] && . ./.env
+# BASE_RPC_URL from the environment, or from the root .env
+[ -z "${BASE_RPC_URL:-}" ] && [ -f ../../.env ] && . ../../.env
 
 anvil --fork-url "${BASE_RPC_URL:?set BASE_RPC_URL}" --chain-id 31337 --silent &
 ANVIL=$!
@@ -45,7 +45,7 @@ DEADLINE=$(cast call 0x2F39f464d16402Ca3D8527dA89617b73DE2F60e8 "getOpeningTS(by
 forge script script/SeedFork.s.sol --sig "run(address,address,uint256)" "$ROUTER" "$MARKET" "$DEADLINE" \
 	--rpc-url $RPC --broadcast >/dev/null
 
-cat > ../../apps/web/.env.local <<ENV
+cat > ../../.env.local <<ENV
 NEXT_PUBLIC_FORK=1
 NEXT_PUBLIC_FORK_FROM_BLOCK=$FROM_BLOCK
 NEXT_PUBLIC_FORK_MARKET=$MARKET
