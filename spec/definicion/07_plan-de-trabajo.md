@@ -109,7 +109,7 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 **Objetivo:** que un juez entienda OddsFlow en dos minutos y pueda comprobar que funciona sin depender de nosotros.
 
-- README público completo ([`PROJECT_README.template.md`](../../PROJECT_README.template.md) como base): qué es, cómo correrlo, direcciones, evidencia con los hashes de la fase 3.
+- README público completo, sobre el esqueleto que ya está en [`README.md`](../../README.md): qué es, cómo correrlo, direcciones, evidencia con los hashes de la fase 3.
 - Video de la demo (dos a cuatro minutos): el problema del [01](./01_contexto-y-problema.md) en una frase, publicar varias órdenes con un saldo, una compra que llena una, el saldo compartido bajando, y el opcode propio explicado en una pantalla.
 - El cobro, mostrado sobre el fork, porque el mercado de la demo no se resuelve antes del cierre (ver *Decisiones del plan*).
 - Cerrar el [feedback a 1inch](../feedback/01_1inch.md): tabla de resumen, reportes abiertos, respuestas de los mentores.
