@@ -6,7 +6,13 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			include: ['packages/core/src/**/*.ts'],
-			exclude: ['packages/core/src/**/*.test.ts', 'packages/core/src/index.ts'],
+			// ABIs and fixtures are data, not logic
+			exclude: [
+				'packages/core/src/**/*.test.ts',
+				'packages/core/src/index.ts',
+				'packages/core/src/abis/**',
+				'packages/core/src/fixtures/**',
+			],
 			reporter: ['text', 'text-summary'],
 			thresholds: {
 				lines: 90,

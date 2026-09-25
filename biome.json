@@ -16,7 +16,8 @@
 			"!packages/contracts/out",
 			"!packages/contracts/cache",
 			"!packages/contracts/broadcast",
-			"!packages/contracts/deployments"
+			"!packages/contracts/deployments",
+			"!packages/core/src/fixtures"
 		]
 	},
 	"formatter": {

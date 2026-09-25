@@ -45,6 +45,13 @@ Versioning cadence, while pre-1.0:
   `OddsFlowTakerForkTest` (20 tests on a Base fork, the taker ends every
   transaction holding nothing) and `RulesForkTest` (the spec 05 §5 rules, each
   one reverting).
+- `packages/core`: builds and parses the OddsFlow order program, its Aqua
+  strategy and hash; derives an order's status and what it can cover today;
+  plans buys and sells with the exact arithmetic of `OddsFlowTaker`, so the
+  numbers shown before signing are the ones that happen. ABIs for our
+  contracts and Aqua are generated from the Foundry build (`pnpm abis`).
+  Evidence: the parity tests against `fixtures/order.json`, written by the
+  Solidity `ParityTest`, match byte for byte.
 - Deployment scripts: `Deploy.s.sol` deploys the router and `OddsFlowTaker`
   and renounces the router's ownership in the same run; `CreateDemoMarket.s.sol`
   creates the binary demo market on Seer. Both simulated against Base.
