@@ -70,6 +70,18 @@ Stack en uso: contratos oficiales en Base mainnet — Aqua `0x1111113ccf1426a8e3
 
 **Reportado:** pendiente. Sugerencia: que el README de `main` indique el tag exacto que corresponde a la dirección desplegada.
 
+### 2026-09-26 — Los paquetes npm que anuncian los READMEs no existen
+
+**Documentado / prometido:** los READMEs de `1inch/swap-vm` y `1inch/aqua` muestran badges de npm para `@1inch/swap-vm` y `@1inch/aqua`, y el `package.json` de SwapVM `v1.0.2` depende de `"@1inch/aqua": "github:1inch/aqua#0.1.0"`.
+
+**Encontrado:** `npm view @1inch/swap-vm version` y `npm view @1inch/aqua version` no devuelven nada. Los SDK de TypeScript (`@1inch/swap-vm-sdk` 0.4.4, `@1inch/aqua-sdk` 0.3.4) sí están publicados. Para los contratos, la vía es `forge install` con el tag exacto y remapear a mano OpenZeppelin 5.4.0 y `solidity-utils` 6.9.7, porque sus `remappings.txt` apuntan a `node_modules/`.
+
+**Evidencia:** `npm view` en la fecha; `package.json` y `remappings.txt` de `1inch/swap-vm` en `v1.0.2`.
+
+**Impacto en el proyecto:** confirmó Foundry sobre Hardhat en el [06](../definicion/06_tecnologias.md#2-contratos-y-cadena). Ningún costo todavía.
+
+**Reportado:** pendiente. Sugerencia: publicar los paquetes que anuncian los badges, o documentar el consumo desde un proyecto Foundry externo con sus dos dependencias y los remappings.
+
 ### 2026-09-26 — Lo que funcionó: `pull` y `push` de Aqua responden el diseño solos
 
 **Encontrado:** `src/Aqua.sol` confirma dos cosas que el README solo sugería. `pull` resta del saldo virtual con aritmética comprobada, así que **revierte si la estrategia no tiene saldo**: el tope por orden lo hace cumplir Aqua sin código nuestro. `push` hace `safeTransferFrom(msg.sender, maker, amount)`: **los tokens que entrega el taker llegan directo a la wallet del maker**, no quedan en Aqua. Con eso, "el apostador recibe sus tokens en la misma transacción" no necesita un paso extra.
@@ -95,6 +107,7 @@ Stack en uso: contratos oficiales en Base mainnet — Aqua `0x1111113ccf1426a8e3
 | 2 | Router | Tres routers y una dirección | La dirección es el de Aqua, sin `LimitSwap`; solo el SDK lo aclara | Alta: cambió el diseño de la orden | Pendiente |
 | 3 | Instrucciones | `LimitSwap` para órdenes límite | Deduce el precio de los saldos: sobre Aqua revierte o se mueve; no hay precio fijo posible | Alta: obligó a un opcode propio | PR pendiente |
 | 4 | Versionado | `main` ≠ ABI desplegado | Cambia también el layout (`contracts/` vs `src/`) | Nota | Pendiente |
+| 5 | Distribución | Badges de npm para los contratos | Los paquetes no existen; solo los SDK de TypeScript | Nota | Pendiente |
 
 ## Reportes abiertos (se llena en la fase de demo)
 
