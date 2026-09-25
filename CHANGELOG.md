@@ -45,6 +45,12 @@ Versioning cadence, while pre-1.0:
   `OddsFlowTakerForkTest` (20 tests on a Base fork, the taker ends every
   transaction holding nothing) and `RulesForkTest` (the spec 05 §5 rules, each
   one reverting).
+- New orders, My orders, Markets and Positions pages. New orders publishes
+  several orders in one confirmation when the wallet supports EIP-5792, each
+  able to use the whole balance; My orders shows what each can cover today
+  and cancels; the gauge groups orders by price without double-counting a
+  maker's shared balance. Open markets are read once a minute on the server
+  (`/api/markets`) instead of from every browser.
 - Market page: the market as a gauge — each open order is a gate at the YES
   price it implies — next to the buy panel, which plans the purchase with the
   contract's own arithmetic, says what the signature moves and what it does

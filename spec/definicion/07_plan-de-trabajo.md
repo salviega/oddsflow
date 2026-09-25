@@ -35,7 +35,7 @@ El detalle operativo —qué se corre antes de cada commit y en qué orden— vi
 | ~~Def~~ | ~~Definición 01–06 y 09, kit de marca, feedback inicial~~ | ~~A + B~~ | — | ~~Hasta el sábado 05:45~~ |
 | 0 | Andamiaje y compuerta del día 1 | A + B | 3 | Sábado 06:00–09:00 |
 | ~~1~~ | ~~Contratos: opcodes, router, `OddsFlowTaker`, pruebas~~ | ~~A~~ | ~~10~~ | ~~Cerrada el sábado 26 a las 06:12 JST~~ |
-| 2 | `packages/core` y la web contra el fork | B | 10 | Sábado 09:00–19:00 |
+| ~~2~~ | ~~`packages/core` y la web contra el fork~~ | ~~B~~ | ~~10~~ | ~~Cerrada el sábado 26 a las 07:00 JST~~ |
 | 3 | Integración en Base: despliegue y llenado real | A + B | 5 | Sábado 19:00–domingo 00:00 |
 | — | Turnos de sueño | A, luego B | 4 + 4 | A 00:00–04:00 · B 03:00–07:00 |
 | 4 | Demo y entrega | A + B | 5 (escalonadas) | Domingo 00:00–07:00, margen hasta el cierre |
@@ -85,12 +85,16 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 **Objetivo:** las cinco pantallas del [04 §5](./04_diseno-de-solucion.md#5-pantallas), contra el router desplegado en un fork local, con las reglas de interfaz del [09 §7](./09_marca-y-seo.md#7-reglas-de-interfaz).
 
-- `packages/core`: direcciones de Base, construir el programa de una orden con la tabla de opcodes propia, `strategyHash`, libro de órdenes desde `Shipped` / `Docked`, estado derivado de cada orden, cálculo de una compra (qué órdenes, cuánto, precio promedio). Todo con pruebas; umbral del 90 %.
-- **La prueba que vale por dos:** el `strategyHash` de TypeScript coincide con el de Solidity. Se coordina con A a media fase.
-- Antes de construir la primera pantalla, proponer dos direcciones de composición y elegir una ([09 §10](./09_marca-y-seo.md#10-pendientes)). Quince minutos, no más.
-- Pantallas, en este orden: **Mercado** (comprar) → **Nuevas órdenes** (aprobar y publicar con `wallet_sendCalls`) → **Mis órdenes** (cancelar) → **Mercados** → **Posiciones** (cobrar).
-- Cada pantalla con todos sus estados ([09 §7](./09_marca-y-seo.md#7-reglas-de-interfaz)) y el resumen previo a cada firma.
-- `generateMetadata` en la página de mercado; `noindex` en las páginas de wallet.
+- ~~`packages/core`: direcciones de Base, construir el programa de una orden con la tabla de opcodes propia, `strategyHash`, libro de órdenes desde `Shipped` / `Docked`, estado derivado de cada orden, cálculo de una compra (qué órdenes, cuánto, precio promedio). Todo con pruebas; umbral del 90 %.~~
+- ~~**La prueba que vale por dos:** el `strategyHash` de TypeScript coincide con el de Solidity. Se coordina con A a media fase.~~
+- ~~Antes de construir la primera pantalla, proponer dos direcciones de composición y elegir una ([09 §10](./09_marca-y-seo.md#10-pendientes)). Quince minutos, no más.~~
+- ~~Pantallas, en este orden: **Mercado** (comprar) → **Nuevas órdenes** (aprobar y publicar con `wallet_sendCalls`) → **Mis órdenes** (cancelar) → **Mercados** → **Posiciones** (cobrar).~~
+- ~~Cada pantalla con todos sus estados ([09 §7](./09_marca-y-seo.md#7-reglas-de-interfaz)) y el resumen previo a cada firma.~~
+- ~~`generateMetadata` en la página de mercado; `noindex` en las páginas de wallet.~~
+
+> **Fase 2 verificada el sábado 26, ~07:00 JST**, contra el fork local (`scripts/dev-fork.sh`): desde la web se compró 100 NO llenando una orden YES a 0.25 (en la cadena: 100 NO y 75 inválidos al comprador por 75 sUSDS, 100 YES y 25 inválidos al maker por 25, `OddsFlowTaker` en cero), se publicaron dos órdenes de 10 000 sUSDS cada una con un saldo de 10 000, y se canceló una. `packages/core` en 100 % con la paridad de `strategyHash` en verde. **Sin verificar:** la vista de 390 px — la ventana del navegador de prueba no aceptó el cambio de tamaño; queda para revisión manual.
+>
+> **Hallazgo que cambia la demo:** el único mercado binario de Seer abierto en Base es el nuestro. Los otros 154 ya abrieron a respuestas o no son binarios. La demo de "dos mercados, un saldo" necesita un segundo mercado propio (`DEMO_MARKET_NAME` distinto con `pnpm demo:market`).
 
 **Verificación:** `pnpm test` con el umbral cumplido y la prueba de paridad de `strategyHash` en verde; contra un fork local (`anvil --fork-url`) con el router de A, se publica una orden desde una cuenta, se compra desde otra y se cancela una tercera, todo desde la web; revisión en 390 px y 1440 px.
 
@@ -126,7 +130,7 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 ## Decisiones del plan
 
 - **El mercado de la demo se crea el sábado temprano, con apertura a respuestas el lunes 28.** Las órdenes tienen que vencer, como tarde, en esa apertura ([04 §6](./04_diseno-de-solucion.md#6-reglas-de-negocio)), así que el mercado tiene que seguir abierto durante la demo del domingo. Consecuencia: no se resuelve antes del cierre, y **el cobro se muestra en el fork** avanzando el tiempo y respondiendo en Reality.eth. Es honesto y se dice así en la demo.
-- **Dos mercados en la demo:** el nuestro y uno existente de Seer que siga abierto. Así se ve que OddsFlow funciona sobre cualquier mercado binario de Seer en Base, no solo sobre uno hecho a medida.
+- **Dos mercados en la demo, los dos creados por nosotros.** El plan era el nuestro y uno existente de Seer, pero el 26 de septiembre no queda ningún otro mercado binario abierto en Base. El segundo mercado se crea con `pnpm demo:market` y otra pregunta.
 - **El PR de `FixedPriceSwap` a `1inch/swap-vm` va después del hackathon** ([08](./08_roadmap.md)). En 27 horas no cabe prepararlo bien, y uno mal preparado es peor que ninguno.
 
 ---

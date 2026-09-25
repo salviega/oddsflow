@@ -91,7 +91,11 @@ export async function getMarket(address: string): Promise<Market | null> {
 	}
 }
 
-/** Binary Seer markets still open to trading, featured ones first, then by closing time. */
+/**
+ * Binary Seer markets still open to trading, featured ones first, then by
+ * closing time. Filters as early as possible: outcome count first, then the
+ * opening time, and only the markets left get their full details read.
+ */
 export async function getOpenMarkets(): Promise<Market[]> {
 	const all = await publicClient.readContract({
 		address: SEER_MARKET_FACTORY,
@@ -103,8 +107,20 @@ export async function getOpenMarkets(): Promise<Market[]> {
 		contracts: all.map((address) => ({ address, abi: seerMarketAbi, functionName: 'numOutcomes' }) as const),
 	})
 	const binary = all.filter((_, i) => counts[i]?.status === 'success' && counts[i]?.result === 2n)
+	const questions = await publicClient.multicall({
+		allowFailure: false,
+		contracts: binary.map((address) => ({ address, abi: seerMarketAbi, functionName: 'questionsIds' }) as const),
+	})
+	const openings = await publicClient.multicall({
+		allowFailure: false,
+		contracts: questions.map(
+			(ids) =>
+				({ address: REALITY_ETH, abi: realityAbi, functionName: 'getOpeningTS', args: [ids[0] as Hex] }) as const,
+		),
+	})
 	const now = Math.floor(Date.now() / 1000)
-	const markets = (await readMarkets(binary)).filter((m) => !m.resolved && m.openingTs > now)
+	const open = binary.filter((_, i) => Number(openings[i]) > now)
+	const markets = open.length === 0 ? [] : (await readMarkets(open)).filter((m) => !m.resolved)
 	const rank = (m: Market) => {
 		const i = featuredMarkets.findIndex((f) => f.toLowerCase() === m.address.toLowerCase())
 		return i === -1 ? featuredMarkets.length : i

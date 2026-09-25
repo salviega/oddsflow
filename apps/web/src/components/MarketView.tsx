@@ -1,20 +1,10 @@
 'use client'
 
 import { useBook } from '@/hooks/useBook'
+import { formatOpening } from '@/lib/dates'
 import type { Market } from '@/lib/markets'
 import { BuyPanel } from './BuyPanel'
 import { Scale } from './Scale'
-
-export function formatOpening(ts: number): string {
-	return new Intl.DateTimeFormat('en-GB', {
-		weekday: 'short',
-		day: 'numeric',
-		month: 'short',
-		hour: '2-digit',
-		minute: '2-digit',
-		timeZoneName: 'short',
-	}).format(new Date(ts * 1000))
-}
 
 export function MarketView({ market }: { market: Market }) {
 	const book = useBook([market])

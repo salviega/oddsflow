@@ -39,6 +39,8 @@ export type BookOrder = {
 	status: OrderStatus
 	/** sUSDS the order can pay today (0 unless active). */
 	available: bigint
+	/** What the maker can pay across all their orders: min(balance, approval to Aqua). */
+	makerFunds: bigint
 	deadline: number
 }
 
@@ -141,7 +143,35 @@ export async function getBook(deployment: Deployment, markets: readonly Market[]
 			capLeft,
 			status: orderStatus(r),
 			available: coverableToday(r),
+			makerFunds: r.makerBalance < r.makerAllowance ? r.makerBalance : r.makerAllowance,
 			deadline: c.params.deadline,
 		}
+	})
+}
+
+export type Level = { side: Side; price: bigint; available: bigint; orders: number }
+
+/**
+ * Active orders grouped by side and price. Orders from one maker share one
+ * balance, so a maker adds at most what they can pay in total to a level.
+ */
+export function levels(orders: readonly BookOrder[]): Level[] {
+	const groups = new Map<string, BookOrder[]>()
+	for (const o of orders) {
+		if (o.status !== 'active' || o.available === 0n) {
+			continue
+		}
+		const key = `${o.side}:${o.price}`
+		groups.set(key, [...(groups.get(key) ?? []), o])
+	}
+	return [...groups.values()].map((group) => {
+		const byMaker = new Map<string, { sum: bigint; funds: bigint }>()
+		for (const o of group) {
+			const m = byMaker.get(o.maker.toLowerCase()) ?? { sum: 0n, funds: o.makerFunds }
+			byMaker.set(o.maker.toLowerCase(), { sum: m.sum + o.available, funds: m.funds })
+		}
+		const available = [...byMaker.values()].reduce((t, m) => t + (m.sum < m.funds ? m.sum : m.funds), 0n)
+		const first = group[0] as BookOrder
+		return { side: first.side, price: first.price, available, orders: group.length }
 	})
 }

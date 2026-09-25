@@ -19,7 +19,7 @@ export const chain = isFork ? baseFork : base
 
 export const rpcUrl = isFork ? 'http://127.0.0.1:8545' : process.env.NEXT_PUBLIC_BASE_RPC_URL
 
-export const publicClient = createPublicClient({ chain, transport: http(rpcUrl, { batch: true }) })
+export const publicClient = createPublicClient({ chain, transport: http(rpcUrl, { batch: true, timeout: 60_000 }) })
 
 /** OddsFlow's contracts on the current chain, or undefined before deployment. */
 export function deployment(): Deployment | undefined {
