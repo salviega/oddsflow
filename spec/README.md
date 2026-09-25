@@ -1,4 +1,4 @@
-# [Nombre del proyecto] — Documentación
+# OddsFlow — Documentación
 
 <!-- Cómo llenar este archivo: es el índice, no el contenido. Una frase que
      defina el proyecto (el "elevator pitch"), y un párrafo de contexto: qué
@@ -32,6 +32,7 @@ Documentos, en orden. Cada uno asume el anterior.
 | [06](./definicion/06_tecnologias.md)         | **Tecnologías**           | Qué se instala, para qué sirve cada pieza y qué se descartó           |
 | [07](./definicion/07_plan-de-trabajo.md)     | **Plan de trabajo**       | Fases de construcción, cómo se verifica cada una y qué se recorta      |
 | [08](./definicion/08_roadmap.md)             | **Roadmap** _(opcional)_  | Lo que no entra en este hackathon y sí en el siguiente                |
+| [09](./definicion/09_marca-y-seo.md)         | **Marca, interfaz y SEO** | Símbolo, color, tipografía, voz, reglas de interfaz y SEO de la web    |
 
 **Por dónde empezar según quién seas:** para entender el proyecto, el 01 y el
 02 bastan. Para trabajar en producto, el 04. Para escribir código, el 05 y el

@@ -1,9 +1,7 @@
-# [Project name]
+# OddsFlow
 
-<!-- [ADAPT] One or two sentences: what the project is and what problem it
-     solves. Same pitch as spec/definicion/02_solucion.md, summarized. -->
-
-[One or two sentence elevator pitch.]
+Bet on many prediction markets with the same money, committing it only when
+a counterparty shows up.
 
 The definition lives in `spec/definicion/` (numbered documents);
 `07_plan-de-trabajo.md` is the phased plan and doubles as the progress log —
@@ -30,35 +28,19 @@ Spanish for the definition documents under `spec/definicion/**`. Nothing else.
 No commit lands without this, in this order. A failing step is a blocker, not
 a warning to note and move past.
 
-<!-- [ADAPT] This is the skeleton that works for any stack. Fill in the real
-     commands (test runner, linter, typecheck) and decide whether step 4
-     (enforcing the critical promise) applies to your project — most
-     projects with money, sensitive data, or hardware in the loop need it;
-     an internal CRUD probably doesn't. -->
-
-1. **Tests first, and they have failed once.** `[test command]` passes[,
-   coverage at [X]% or above on [which folder/package] — enforced by the
-   test runner's own threshold config, so the command itself fails under the
-   floor; never a separate "check the %" step]. A test that guards a promise
-   in `04_diseno-de-solucion.md` — [name the critical invariant from 05 §5
-   here] — was written before the code and seen failing for the expected
-   reason.
-
-   <!-- [ADAPT] A number (80-90% is a reasonable default for your own
-        business logic) ONLY makes sense where "more tests is better" holds
-        in general — domain code, utilities, transformations. Delete it
-        entirely if the project doesn't have that kind of code, or if it's
-        too early to fix a number. See the note under "Tests come first"
-        below on why this same number should NOT apply to contracts,
-        migrations, or any small and critical piece. -->
-
-2. `[typecheck command]` — clean.
-3. `[lint/format command]` — clean.
-4. **[Name here the step that enforces the rule that can't fail.]**
-   <!-- Real example from Moor: "Every signable function has its ERC-7730
-        descriptor and a Speculos screen." Your equivalent might be "every
-        endpoint that touches money has its authorization test", "every
-        migration has a rollback", etc. Delete if not applicable. -->
+1. **Tests first, and they have failed once.** `pnpm test` passes, with
+   coverage at 90% or above on `packages/core` — enforced by the
+   `coverage.thresholds` in `vitest.config.ts`, so the command itself fails
+   under the floor. `pnpm test:contracts` passes on a Base fork. A test that
+   guards a promise in `04_diseno-de-solucion.md` — the maker's sUSDS never
+   leaves without their outcome tokens, at the signed price — was written
+   before the code and seen failing for the expected reason.
+2. `pnpm typecheck` — clean.
+3. `pnpm check` and `forge fmt --check` — clean.
+4. **Every change to `FixedPriceSwap`, `OnlyUnresolvedCondition`, the router
+   or `OddsFlowTaker` keeps the "forbidden must fail" tests of
+   `05_stack-y-arquitectura.md` §5 green**, `CoreInvariants` included, and
+   adds one if it opens a new way to move funds.
 5. Review whether the change makes any of these stale, and update what it
    does: `spec/definicion/**` (strike through what the commit completes in
    `07`; if a risk closed, say which way), the README, `AGENTS.md`, and

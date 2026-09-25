@@ -1,35 +1,30 @@
 # 01 — Contexto y Problema
 
 > **Alcance de este documento:** qué está pasando y por qué duele. **No propone solución.**
->
-> <!-- Por qué separar esto de la solución: si mezclas problema y solución
->      desde la primera página, cualquier objeción al enfoque se lee como una
->      objeción al problema, y las dos cosas son independientes. Este
->      documento tiene que poder leerse y estar de acuerdo con él SIN saber
->      todavía qué se va a construir. -->
 
 ---
 
 ## Contexto
 
-<!-- Qué situación existe, desde cuándo, a quién afecta. Cómo se resuelve HOY
-     sin este proyecto — con qué herramientas, quién las mantiene. Sé
-     concreto: nombra la herramienta real que la gente usa hoy (una hoja de
-     cálculo, un grupo de WhatsApp, un proceso manual), no una abstracción. -->
+Quien quiere dar liquidez o apostar en mercados de predicción onchain tiene que poner capital en cada mercado por separado. Ese capital queda bloqueado en el mercado hasta que se resuelve.
 
-_Qué situación existe, desde cuándo y a quién afecta._
+**Elegir mercado → depositar capital → esperar la resolución (semanas o meses) → retirar → repetir.**
 
-_Cómo se está resolviendo hoy: con qué herramientas, quién las mantiene._
+Durante casi toda esa espera nadie opera contra ese capital: **está bloqueado, pero no se usa.**
 
 ## Problema
 
-<!-- Qué falla en esa forma de resolverlo, con consecuencias CONCRETAS y
-     verificables — no "es ineficiente", sino qué se pierde exactamente y
-     quién lo paga. Termina, si tiene sentido, en una pregunta abierta que el
-     02 responda: es lo que conecta los dos documentos sin que el 01 tenga
-     que adelantar la respuesta. -->
+Como cada mercado exige su propio capital por adelantado, estar en 10 mercados cuesta 10 veces más que estar en uno. Además, hay que decidir cuánto poner en cada uno antes de saber dónde habrá demanda:
 
-_Qué falla en esa forma de resolverlo, con consecuencias concretas y
-verificables._
+- Donde sobra, el capital queda quieto hasta la resolución.
+- Donde falta, las operaciones no se ejecutan, aunque haya dinero ocioso en otro mercado.
 
-_Qué se pierde por eso: tiempo, dinero, oportunidades, personas._
+El resultado: **la liquidez se concentra en los mercados grandes y los nuevos o de nicho se quedan sin contraparte.**
+
+El usuario termina enfrentando un trade-off:
+
+> **¿Cubrir pocos mercados con capital suficiente o muchos con capital insuficiente?**
+
+Hoy hay que elegir. La pregunta que queda abierta es si tiene que ser así:
+
+> **¿Y si el mismo capital pudiera respaldar muchos mercados a la vez y comprometerse solo cuando alguien opera?**
