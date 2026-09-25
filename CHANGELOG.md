@@ -45,6 +45,9 @@ Versioning cadence, while pre-1.0:
   `OddsFlowTakerForkTest` (20 tests on a Base fork, the taker ends every
   transaction holding nothing) and `RulesForkTest` (the spec 05 §5 rules, each
   one reverting).
+- Deployment scripts: `Deploy.s.sol` deploys the router and `OddsFlowTaker`
+  and renounces the router's ownership in the same run; `CreateDemoMarket.s.sol`
+  creates the binary demo market on Seer. Both simulated against Base.
 - Monorepo scaffold: Next.js web app built around the brand and SEO files,
   `packages/core` with price and amount formatting and the Base addresses,
   Foundry contracts pinned to the 1inch tags, CI on pull requests, and
