@@ -1,35 +1,22 @@
 # Feedback a los sponsors — índice
 
-> **Opcional.** Solo tiene sentido si el hackathon tiene sponsors cuya
-> tecnología (SDK, API, protocolo, hardware) usas de verdad — no como
-> requisito de un bounty aislado, sino como parte del stack real. Bórralo si
-> no aplica.
->
-> <!-- Por qué esto vale la pena incluso sin obligación de ningún track:
->      1) muchos tracks piden explícitamente "feedback sobre la experiencia
->      con nuestra documentación/SDK" como requisito de calificación — tener
->      esto ya escrito es el entregable, no trabajo extra;
->      2) escribir la sorpresa el mismo día que ocurre es mucho más preciso
->      que reconstruirla de memoria la noche antes de entregar;
->      3) es evidencia verificable de que probaste la tecnología a fondo, no
->      solo el happy path del tutorial. -->
-
 Bitácora viva de lo que cada sponsor documenta o promete frente a lo que
-encontramos al construir. No es una opinión al final del hackathon: cada
-entrada se escribe **el mismo día** que se descubre algo, con la evidencia a
-la mano — un archivo:línea, un mensaje de error exacto, un comando, una
+encontramos al construir OddsFlow. No es una opinión al final del hackathon:
+cada entrada se escribe **el mismo día** que se descubre algo, con la evidencia
+a la mano — un archivo:línea, un mensaje de error exacto, un comando, una
 captura.
 
 No es una queja unilateral: cada archivo abre con lo que funcionó bien.
 
-| Sponsor | Archivo |
-| ------- | ------- |
-| _[Sponsor 1]_ | [01_sponsor-example.md](./01_sponsor-example.md) — duplícalo y renombra |
+| Sponsor | Archivo | Para qué además sirve |
+| ------- | ------- | --------------------- |
+| 1inch | [01_1inch.md](./01_1inch.md) | Aqua y SwapVM son el núcleo del producto: cualquier diferencia entre sus docs y sus contratos desplegados cambia el diseño de la orden |
+
+Seer no es sponsor, así que lo que se encuentre de Seer (por ejemplo, que su
+colateral en Base es sUSDS y la documentación no lo dice) va al
+[03](../definicion/03_bounties.md), no aquí.
 
 ## Cómo se usa cada archivo
-
-<!-- Copia 01_sponsor-example.md una vez por sponsor cuya tecnología uses de
-     verdad, y renómbralo. -->
 
 1. **Se escribe en el momento**, no de memoria al final.
 2. **Formato de cada entrada:** qué se documentaba o se esperaba, qué se
