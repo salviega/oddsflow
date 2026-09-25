@@ -28,13 +28,12 @@ Spanish for the definition documents under `spec/definicion/**`. Nothing else.
 No commit lands without this, in this order. A failing step is a blocker, not
 a warning to note and move past.
 
-1. **Tests first, and they have failed once.** `pnpm test` passes, with
-   coverage at 90% or above on `packages/core` — enforced by the
-   `coverage.thresholds` in `vitest.config.ts`, so the command itself fails
-   under the floor. `pnpm test:contracts` passes on a Base fork. A test that
-   guards a promise in `04_diseno-de-solucion.md` — the maker's sUSDS never
-   leaves without their outcome tokens, at the signed price — was written
-   before the code and seen failing for the expected reason.
+1. **Unit tests pass with coverage at 90% or above.** `pnpm test` enforces
+   it on `packages/core` through the `coverage.thresholds` in
+   `vitest.config.ts`, so the command itself fails under the floor.
+   `pnpm test:contracts` passes on a Base fork, and `pnpm coverage:contracts`
+   fails if `packages/contracts/src` is under 90%. Never a separate "check
+   the %" step.
 2. `pnpm typecheck` — clean.
 3. `pnpm check` and `forge fmt --check` — clean.
 4. **Every change to `FixedPriceSwap`, `OnlyUnresolvedCondition`, the router
@@ -130,33 +129,24 @@ App had automatic CD. If something critical is deployed manually, say so
 here and explain what evidence that deployment leaves (a hash, a log, a diff
 of an addresses file). -->
 
-## Tests come first
+## Tests
 
-Unit tests are written before the implementation, not after it. Write the
-failing test, watch it fail for the reason you expect, then make it pass. A
-test that has never failed has never proven anything.
+Unit tests are required, with coverage at 90% or above on `packages/core`
+and on `packages/contracts/src`. Writing them before or after the
+implementation is up to whoever writes the code; what is not optional is the
+floor and the tests named below.
 
-<!-- [ADAPT] Name here the 2-4 tests that truly carry the product — the ones
-     where, if they fail, it means the core promise from 04/05 broke. Don't
-     list trivial tests; this is a short, deliberate list, not coverage. -->
+- **Forbidden must fail** (`05_stack-y-arquitectura.md` §5): wrong
+  direction, wrong token, over the cap, taker not delivering, after the
+  deadline, resolved condition — each one reverts. If one of these passes,
+  a maker can lose sUSDS without getting their tokens.
+- **Fixed price fuzz:** `FixedPriceSwap` never makes the maker pay more than
+  the order's price, exact-in or exact-out.
+- **`strategyHash` parity:** TypeScript and Solidity build the same program
+  and hash. If they diverge, the web shows one order and publishes another.
 
-- **[Critical test name 1]:** _what it guarantees, and what happens if it
-  fails._
-- **[Critical test name 2]:** _what it guarantees._
-
-<!-- [ADAPT] If you have a coverage threshold (ritual step 1), say explicitly
-     what it does NOT apply to and why — the distinction that matters:
-     general domain code benefits from a number; a small and critical piece
-     (a contract, an authorization function, a migration) benefits more from
-     these named tests covering every decision branch than from hitting a
-     uniform percentage. A critical module at 80% that covers everything
-     forbidden is worth more than one at 95% that only tested the happy
-     path. Delete this whole block if the distinction doesn't apply. -->
-
-**[The critical piece] doesn't carry a blanket coverage number.** It rests on
-the tests named above, not on a uniform percentage — covering every
-forbidden decision branch weighs more than a high number that only tests the
-happy path.
+Coverage is the floor, not the proof: 90% that skips a forbidden branch is
+worth less than the named tests above.
 
 ## Security
 

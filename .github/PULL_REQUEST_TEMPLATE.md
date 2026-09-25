@@ -24,7 +24,7 @@ claim you can point to. -->
 <!-- [ADAPTAR] Esta lista debe reflejar EXACTAMENTE el ritual de commit de
      AGENTS.md — si cambias uno, cambia el otro. -->
 
-- [ ] Tests were written before the implementation, and failed first
+- [ ] Unit tests cover the change, and coverage stays at 90% or above
 - [ ] `[test command]` passes[, coverage at [X]% or above where that applies]
 - [ ] `[typecheck command]` is clean
 - [ ] `[lint command]` is clean

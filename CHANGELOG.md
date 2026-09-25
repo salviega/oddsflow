@@ -18,22 +18,25 @@ Versioning cadence, while pre-1.0:
 - **Patch** for ordinary work, **minor** when a phase of
   [the work plan](./spec/definicion/07_plan-de-trabajo.md) closes.
 
-<!-- [ADAPTAR] Añade aquí la(s) convención(es) de evidencia propia de tu
-     proyecto — lo que hace que una entrada sea verificable en vez de una
-     afirmación. Ejemplos reales: "todo lo que pasó en una blockchain lleva
-     su hash de transacción"; "toda mejora de UI lleva una captura o un
-     enlace al preview de Vercel"; "todo cambio de rendimiento lleva el
-     número antes/después". Bórralo si no aplica ninguno. -->
-
-- **[Tu convención de evidencia]:** _—_
+- **Anything that happened on Base carries its transaction hash** (Basescan
+  link). Anything verified on a fork carries the name of the test that proves
+  it.
 
 ## [Unreleased]
 
 ### Added
 
-- Starter kit scaffold: `spec/definicion/` document chain, the `AGENTS.md`
-  commit ritual, this `CHANGELOG.md`, `README.md`, `PROJECT_README.template.md`,
-  the PR template, and a stack-agnostic `.gitignore`.
-- `.githooks/commit-msg`: enforces the Conventional Commits rules from
-  `AGENTS.md`. Written in POSIX sh so it runs without any language runtime;
-  enable it per clone with `git config core.hooksPath .githooks`.
+- `FixedPriceSwap` opcode: a limit-order price for Aqua strategies, taken from
+  the instruction's arguments instead of the balance registers, with rounding
+  in the maker's favour and a single allowed direction. Evidence:
+  `GateForkTest` fills an order shipped on the official Aqua at exactly 0.20
+  on a Base fork, exact-in and exact-out; `testFuzz_makerNeverPaysMoreThanPrice`.
+- `OnlyUnresolvedCondition` opcode: rejects a fill once the Seer market's
+  condition has payouts reported. Evidence: `test_revert_resolvedCondition`.
+- `OddsFlowRouter`: `AquaSwapVMRouter` from 1inch/swap-vm v1.0.2 with the two
+  opcodes appended after the official ones, so every official opcode keeps
+  its index.
+- Monorepo scaffold: Next.js web app built around the brand and SEO files,
+  `packages/core` with price and amount formatting and the Base addresses,
+  Foundry contracts pinned to the 1inch tags, CI on pull requests, and
+  pre-commit and commit-msg hooks.

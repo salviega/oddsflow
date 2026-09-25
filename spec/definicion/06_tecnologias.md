@@ -74,6 +74,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | **Biome** | 2.5 | Lint y formato de TypeScript en un solo binario. Script `check` |
 | **Vitest** | 5.0 | Pruebas de `packages/core`: construir y decodificar programas, estado derivado de una orden, recorrido de órdenes de una compra, esquemas |
 | **`@vitest/coverage-v8`** | 5.0 | Cubrimiento de Vitest. `pnpm test` corre con `--coverage`; el umbral vive en `vitest.config.ts` |
+| **`forge coverage`** | — | Cubrimiento de contratos, con el piso de 90 % aplicado por `scripts/check-coverage.mjs` |
 | **`forge test`** | — | Pruebas de contratos sobre fork de Base, incluidas las de "lo prohibido debe fallar" del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) y `CoreInvariants` |
 | **`forge fmt`** | — | Formato de Solidity |
 | **GitHub Actions** | — | En cada PR: `pnpm check`, `pnpm test`, `forge fmt --check`, `forge test` con fork de Base, build de la web |
@@ -81,7 +82,9 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 **Una prueba que vale por dos.** `packages/core` construye el programa de una orden y calcula su `strategyHash`; una prueba de Foundry construye el mismo programa en Solidity y compara. Si divergen, la web estaría publicando una orden y mostrando otra.
 
-**Cubrimiento: 90 % en `packages/core`, sin umbral ciego en los contratos.** `vitest.config.ts` declara `coverage.thresholds` sobre `packages/core/src/**`, así que `pnpm test` falla solo si baja del piso. Los contratos no llevan un porcentaje: se sostienen en las pruebas nombradas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó), fuzz de `FixedPriceSwap` incluido. `forge coverage --report summary --ir-minimum` corre en CI como lectura, no como compuerta.
+**Cubrimiento: 90 % o más en `packages/core` y en `packages/contracts/src`.** Pruebas unitarias; escribirlas antes o después del código queda a criterio de quien lo escribe. En `packages/core`, `vitest.config.ts` declara `coverage.thresholds`, así que `pnpm test` falla solo bajo el piso. En contratos, Foundry no tiene umbral propio: `pnpm coverage:contracts` corre `forge coverage --ir-minimum` y `scripts/check-coverage.mjs` falla si la fila *Total* baja de 90 % en líneas, sentencias, ramas o funciones. El piso no reemplaza a las pruebas nombradas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó): las dos cosas son obligatorias.
+
+**`require` con error personalizado no se mide bien con `--ir-minimum`.** Foundry no instrumenta esas ramas (ni siquiera el camino que pasa): con `require(cond, Error())` en los opcodes, las ramas daban 41,67 % con todas las pruebas de reversión en verde. Con `if (!cond) revert Error();` dan 100 %. En `packages/contracts/src` se escribe así.
 
 ---
 
@@ -121,6 +124,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | `pnpm typecheck` | `tsc --noEmit` en todos los paquetes |
 | `pnpm test` | Vitest con `--coverage`; falla si `packages/core` baja del 90 % |
 | `pnpm test:contracts` | `forge test --fork-url $BASE_RPC_URL` |
+| `pnpm coverage:contracts` | `forge coverage` sobre el fork; falla si `packages/contracts/src` baja de 90 % |
 | `pnpm build` | Build de la web |
 | `pnpm deploy:base` | `forge script` del router y `OddsFlowTaker` en Base, con `--account deployer --verify`, y escribe las direcciones en `packages/core` |
 | `pnpm demo:market` | Crea el mercado binario de la demo en Seer (`MarketFactory`) e imprime sus tokens y su `conditionId` |
@@ -143,6 +147,6 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 ## 10. Pendientes
 
-- **Aqua desplegado en Base vs. tag `0.1.0`.** Confirmar en la compuerta del día 1 que `ship`, `dock`, `pull`, `push`, `safeBalances` y `rawBalances` del contrato oficial coinciden con la interfaz del tag. Si no, fijar el tag que coincida.
+- ~~**Aqua desplegado en Base vs. tag `0.1.0`.**~~ Coinciden: `ship`, `rawBalances`, `safeBalances`, `pull` y `push` del Aqua oficial funcionan con la interfaz del tag en `GateForkTest` (26 de septiembre).
 - **`@1inch/swap-vm-sdk` 0.4 y el ABI `v1.0`.** Confirmar que codifica `Order` y `takerTraits` para el ABI desplegado y no para el de `main`. Si no, `packages/core` codifica el programa con su propia tabla, que igual hace falta para los dos opcodes nuevos.
 - **`permit` en sUSDS de Base** (compartido con el [05 §11](./05_stack-y-arquitectura.md#11-pendientes)): decide si la primera compra es una firma o dos llamadas agrupadas.

@@ -1,0 +1,25 @@
+{
+	"name": "oddsflow",
+	"private": true,
+	"packageManager": "pnpm@12.3.4",
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"dev": "pnpm --filter @oddsflow/web dev",
+		"build": "pnpm --filter @oddsflow/web build",
+		"check": "biome check .",
+		"typecheck": "pnpm -r typecheck",
+		"test": "vitest run --coverage",
+		"coverage:contracts": "cd packages/contracts && forge coverage --ir-minimum --fork-url \"$BASE_RPC_URL\" --report summary --no-match-coverage \"(test|script|lib)/\" | node ../../scripts/check-coverage.mjs 90",
+		"test:contracts": "cd packages/contracts && forge test --fork-url \"$BASE_RPC_URL\"",
+		"deploy:base": "cd packages/contracts && forge script script/Deploy.s.sol --rpc-url \"$BASE_RPC_URL\" --account deployer --broadcast --verify",
+		"demo:market": "cd packages/contracts && forge script script/CreateDemoMarket.s.sol --rpc-url \"$BASE_RPC_URL\" --account deployer --broadcast"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.14",
+		"@vitest/coverage-v8": "5.0.2",
+		"typescript": "5.9.3",
+		"vitest": "5.0.2"
+	}
+}

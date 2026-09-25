@@ -1,0 +1,10 @@
+#!/bin/sh
+# Pre-commit: Biome over the TypeScript side, forge fmt over the contracts.
+# Enable once per clone: git config core.hooksPath .githooks
+set -e
+
+pnpm check
+
+if [ -f packages/contracts/foundry.toml ]; then
+	(cd packages/contracts && forge fmt --check)
+fi
