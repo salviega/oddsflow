@@ -11,7 +11,7 @@
 		"check": "biome check .",
 		"typecheck": "pnpm -r typecheck",
 		"test": "vitest run --coverage",
-		"coverage:contracts": "cd packages/contracts && forge coverage --ir-minimum --fork-url \"$BASE_RPC_URL\" --report summary --no-match-coverage \"(test|script|lib)/\" | node ../../scripts/check-coverage.mjs 90",
+		"coverage:contracts": "cd packages/contracts && forge coverage --ir-minimum --fork-url \"$BASE_RPC_URL\" --skip \"test/Invariants.fork.t.sol\" --report summary --no-match-coverage \"(test|script|lib)/\" | node ../../scripts/check-coverage.mjs 90",
 		"test:contracts": "cd packages/contracts && forge test --fork-url \"$BASE_RPC_URL\"",
 		"deploy:base": "cd packages/contracts && forge script script/Deploy.s.sol --rpc-url \"$BASE_RPC_URL\" --account deployer --broadcast --verify",
 		"demo:market": "cd packages/contracts && forge script script/CreateDemoMarket.s.sol --rpc-url \"$BASE_RPC_URL\" --account deployer --broadcast"
