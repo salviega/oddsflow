@@ -3,7 +3,7 @@
 # the demo market created, test accounts funded with sUSDS and sample orders
 # published. Then run `pnpm dev:fork` in another terminal.
 #
-#   BASE_RPC_URL=https://mainnet.base.org scripts/dev-fork.sh
+#   scripts/dev-fork.sh   (reads BASE_RPC_URL from packages/contracts/.env)
 set -eu
 
 RPC=http://127.0.0.1:8545
@@ -14,6 +14,8 @@ WHALE=0x1601843c5E9bC251A3272907010AFa41Fa18347E # holds >1M sUSDS on Base
 ACCOUNTS="0x70997970C51812dc3A010C7d01b50e0d17dc79C8 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC 0x90F79bf6EB2c4f870365E785982E1f101E93b906"
 
 cd "$(dirname "$0")/../packages/contracts"
+# BASE_RPC_URL from the environment, or from packages/contracts/.env
+[ -z "${BASE_RPC_URL:-}" ] && [ -f .env ] && . ./.env
 
 anvil --fork-url "${BASE_RPC_URL:?set BASE_RPC_URL}" --chain-id 31337 --silent &
 ANVIL=$!

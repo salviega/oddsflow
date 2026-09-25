@@ -104,7 +104,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 | Variable | Dónde se usa | Notas |
 | --- | --- | --- |
-| `BASE_RPC_URL` | `packages/contracts` (fork y despliegue), CI | Sensible si lleva API key. Secreto de GitHub en CI |
+| `BASE_RPC_URL` | `packages/contracts/.env` (fork y despliegue; Foundry lo carga solo), CI | Sensible: lleva la API key. En CI es el secreto `BASE_RPC_URL`, pasado como variable de entorno porque las pruebas lo leen con `vm.rpcUrl("base")`. Plantilla en `packages/contracts/.env.example` |
 | `NEXT_PUBLIC_BASE_RPC_URL` | `apps/web` | Pública por definición: usar una key restringida por dominio |
 | `ETHERSCAN_API_KEY` | `packages/contracts` (verificación) | Sensible |
 | `NEXT_PUBLIC_SITE_URL` | `apps/web/src/lib/site.ts` (canonical, Open Graph, sitemap) | Pública. Sin ella, `https://oddsflow.vercel.app` ([09 §10](./09_marca-y-seo.md#10-pendientes)) |
@@ -123,7 +123,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | `pnpm check` | Biome: lint y formato |
 | `pnpm typecheck` | `tsc --noEmit` en todos los paquetes |
 | `pnpm test` | Vitest con `--coverage`; falla si `packages/core` baja del 90 % |
-| `pnpm test:contracts` | `forge test --fork-url $BASE_RPC_URL` |
+| `pnpm test:contracts` | `forge test` sobre un fork de Base (alias `base` de `foundry.toml`) |
 | `pnpm coverage:contracts` | `forge coverage` sobre el fork; falla si `packages/contracts/src` baja de 90 % |
 | `pnpm build` | Build de la web |
 | `pnpm deploy:base` | `forge script` del router y `OddsFlowTaker` en Base, con `--account deployer --verify`, y escribe las direcciones en `packages/core` |

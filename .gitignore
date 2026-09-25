@@ -44,3 +44,7 @@ Thumbs.db
 
 # Local fork deployments (scripts/dev-fork.sh)
 packages/contracts/deployments/31337.json
+
+# Next 16 writes these for AI agents; the repo root AGENTS.md is the only one
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
