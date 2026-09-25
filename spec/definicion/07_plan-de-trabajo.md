@@ -34,7 +34,7 @@ El detalle operativo —qué se corre antes de cada commit y en qué orden— vi
 | ---- | --- | ----- | ----- | ------ |
 | ~~Def~~ | ~~Definición 01–06 y 09, kit de marca, feedback inicial~~ | ~~A + B~~ | — | ~~Hasta el sábado 05:45~~ |
 | 0 | Andamiaje y compuerta del día 1 | A + B | 3 | Sábado 06:00–09:00 |
-| 1 | Contratos: opcodes, router, `OddsFlowTaker`, pruebas | A | 10 | Sábado 09:00–19:00 |
+| ~~1~~ | ~~Contratos: opcodes, router, `OddsFlowTaker`, pruebas~~ | ~~A~~ | ~~10~~ | ~~Cerrada el sábado 26 a las ~08:30 JST~~ |
 | 2 | `packages/core` y la web contra el fork | B | 10 | Sábado 09:00–19:00 |
 | 3 | Integración en Base: despliegue y llenado real | A + B | 5 | Sábado 19:00–domingo 00:00 |
 | — | Turnos de sueño | A, luego B | 4 + 4 | A 00:00–04:00 · B 03:00–07:00 |
@@ -69,11 +69,13 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 - ~~`FixedPriceSwap`: exact-in y exact-out con redondeo a favor del maker, solo en la dirección declarada. Fuzz de precios y montos.~~
 - ~~`OnlyUnresolvedCondition`: revierte con `payoutDenominator(conditionId) > 0`.~~
-- Router: `AquaSwapVMRouter` de `v1.0.2` con los dos opcodes en su tabla. Programa completo: `OnlyUnresolvedCondition` → `Deadline` → `FixedPriceSwap` → `Salt`. Correr `CoreInvariants`.
-- `OddsFlowTaker`: compra con creación de tokens para **una** orden (flash del sUSDS del maker, aporte de la contraparte, `splitPosition` en Seer, `push` del SÍ, reparto de inválidos, mínimo de la contraparte). Después, el recorrido de varias órdenes, de mayor a menor precio, saltando las que no pueden cubrir.
-- Las pruebas negativas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó), todas, más "`OddsFlowTaker` termina con saldo cero".
-- Script de despliegue (`pnpm deploy:base`) con `--account deployer --verify`, probado contra el fork.
-- Medir el gas de una compra que recorre 1, 3 y 5 órdenes, y fijar el máximo ([05 §6](./05_stack-y-arquitectura.md#6-el-cálculo-central-el-precio-fijo-y-el-reparto-en-una-compra)).
+- ~~Router: `AquaSwapVMRouter` de `v1.0.2` con los dos opcodes en su tabla. Programa completo: `OnlyUnresolvedCondition` → `Deadline` → `FixedPriceSwap` → `Salt`. Correr `CoreInvariants`.~~
+- ~~`OddsFlowTaker`: compra con creación de tokens para **una** orden (flash del sUSDS del maker, aporte de la contraparte, `splitPosition` en Seer, `push` del SÍ, reparto de inválidos, mínimo de la contraparte). Después, el recorrido de varias órdenes, de mayor a menor precio, saltando las que no pueden cubrir.~~
+- ~~Las pruebas negativas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó), todas, más "`OddsFlowTaker` termina con saldo cero".~~
+- ~~Script de despliegue (`pnpm deploy:base`) con `--account deployer --verify`, probado contra el fork.~~
+- ~~Medir el gas de una compra que recorre 1, 3 y 5 órdenes, y fijar el máximo ([05 §6](./05_stack-y-arquitectura.md#6-el-cálculo-central-el-precio-fijo-y-el-reparto-en-una-compra)).~~
+
+> **Fase 1 verificada el sábado 26, ~08:30 JST:** 46 pruebas en verde sobre el fork de Base — las 8 reglas del 05 §5 (`RulesForkTest`), 20 de `OddsFlowTaker`, `CoreInvariants` a 0.20, 0.37 y 0.99 — y cobertura de `src/` en 97 % líneas, 98 % sentencias, 92 % ramas, 95 % funciones. La compra de punta a punta con dos makers es `test_buy_sweepsOrdersBestFirst`. Los scripts de despliegue y del mercado de la demo corren en simulación contra Base.
 
 **Verificación:** `pnpm test:contracts` en verde sobre el fork de Base, con las pruebas negativas y `CoreInvariants` incluidas, y `pnpm coverage:contracts` en 90 % o más; una compra de punta a punta en el fork (dos órdenes de dos makers, una contraparte, un mercado real de Seer) deja a cada uno con los tokens y el sUSDS esperados al centavo.
 

@@ -212,5 +212,5 @@ La aprobación de sUSDS a Aqua no es una pantalla: aparece como primer paso dent
 
 **Pendientes:**
 
-- **Cuántas órdenes puede recorrer una compra.** Provisionalmente 5; se mide en la fase de contratos ([05 §6](./05_stack-y-arquitectura.md#6-el-cálculo-central-el-precio-fijo-y-el-reparto-en-una-compra)).
+- ~~**Cuántas órdenes puede recorrer una compra.**~~ Hasta 10, medido ([05 §6](./05_stack-y-arquitectura.md#6-el-cálculo-central-el-precio-fijo-y-el-reparto-en-una-compra)).
 - **Compuerta del día 1** del [03](./03_bounties.md#pendientes): si el router redesplegado no se comporta como se espera, el precio fijo pasa a la misma lógica vía `Extruction` en el router oficial. El diseño de producto no cambia; cambia a qué router apunta la orden.
