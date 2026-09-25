@@ -22,11 +22,28 @@ export const REALITY_ETH: Address = '0x2F39f464d16402Ca3D8527dA89617b73DE2F60e8'
 /** The official 1inch SwapVM router. Reference only: OddsFlow deploys its own. */
 export const SWAPVM_ROUTER_OFFICIAL: Address = '0x111111338c5091e8440b67b168bae16a668ac0de'
 
-// Not deployed yet. `pnpm deploy:base` writes these (and the router's
-// deployment block) once the contracts go to Base.
+/** Chain id of the local Base fork from scripts/dev-fork.sh. */
+export const FORK_CHAIN_ID = 31337
 
-/** The OddsFlow SwapVM router, with the two extra opcodes. */
-export const ODDSFLOW_ROUTER: Address | undefined = undefined
+export type Deployment = {
+	/** The OddsFlow SwapVM router, with the two extra opcodes. */
+	router: Address
+	/** OddsFlowTaker, the counterparty's one-transaction buy and sell. */
+	taker: Address
+	/** Block of the router's deployment: the order book is read from here. */
+	fromBlock: bigint
+}
 
-/** OddsFlowTaker, the taker-side contract that splits and buys in one call. */
-export const ODDSFLOW_TAKER: Address | undefined = undefined
+/**
+ * OddsFlow's own contracts, per chain. Base mainnet is added when
+ * `pnpm deploy:base` runs. The fork addresses are fixed because
+ * scripts/dev-fork.sh resets the deployer's nonce before deploying; its
+ * fromBlock depends on the fork and comes from the web's environment.
+ */
+export const DEPLOYMENTS: Partial<Record<number, Deployment>> = {
+	[FORK_CHAIN_ID]: {
+		router: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+		taker: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+		fromBlock: 0n,
+	},
+}

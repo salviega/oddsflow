@@ -28,3 +28,15 @@ body {
 	outline: 2px solid var(--color-gauge);
 	outline-offset: 2px;
 }
+
+@layer components {
+	.btn-primary {
+		@apply inline-flex min-h-11 items-center justify-center bg-gauge px-5 font-semibold text-lock disabled:cursor-not-allowed disabled:opacity-50;
+	}
+	.btn-secondary {
+		@apply inline-flex min-h-11 items-center justify-center border border-silt px-4 font-medium text-spillway hover:border-mist;
+	}
+	.field {
+		@apply min-h-11 w-full border border-silt bg-transparent px-3 tabular-nums text-spillway placeholder:text-silt focus:border-mist;
+	}
+}

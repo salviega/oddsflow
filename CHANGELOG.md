@@ -45,6 +45,15 @@ Versioning cadence, while pre-1.0:
   `OddsFlowTakerForkTest` (20 tests on a Base fork, the taker ends every
   transaction holding nothing) and `RulesForkTest` (the spec 05 §5 rules, each
   one reverting).
+- Market page: the market as a gauge — each open order is a gate at the YES
+  price it implies — next to the buy panel, which plans the purchase with the
+  contract's own arithmetic, says what the signature moves and what it does
+  not, and sends the approval and the buy together. Evidence: on the local
+  Base fork, buying 100 NO from the page filled the YES 0.25 order; the buyer
+  got 100 NO and 75 invalid for 75 sUSDS, the maker 100 YES and 25 invalid
+  for 25 sUSDS, and OddsFlowTaker kept nothing.
+- `scripts/dev-fork.sh`: a local Base fork with OddsFlow at fixed addresses,
+  the demo market, funded test accounts and sample orders.
 - `packages/core`: builds and parses the OddsFlow order program, its Aqua
   strategy and hash; derives an order's status and what it can cover today;
   plans buys and sells with the exact arithmetic of `OddsFlowTaker`, so the
