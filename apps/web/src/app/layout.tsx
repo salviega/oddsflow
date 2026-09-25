@@ -1,5 +1,6 @@
 import { Barlow } from 'next/font/google'
 import type { ReactNode } from 'react'
+import { Header } from '@/components/Header'
 import { JsonLd } from './metadata'
 import { Providers } from './providers'
 import './globals.css'
@@ -18,7 +19,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 		<html lang="en" className={barlow.variable}>
 			<body>
 				<JsonLd />
-				<Providers>{children}</Providers>
+				<Providers>
+					<Header />
+					{children}
+				</Providers>
 			</body>
 		</html>
 	)

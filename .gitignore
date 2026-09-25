@@ -41,3 +41,6 @@ Thumbs.db
 
 # --- Claude Code local settings ---
 .claude/settings.local.json
+
+# Local fork deployments (scripts/dev-fork.sh)
+packages/contracts/deployments/31337.json

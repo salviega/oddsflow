@@ -32,8 +32,9 @@ describe('Base addresses', () => {
 		expect(addresses.BASE_CHAIN_ID).toBe(8453)
 	})
 
-	it('leaves the OddsFlow contracts unset until they are deployed', () => {
-		expect(addresses.ODDSFLOW_ROUTER).toBeUndefined()
-		expect(addresses.ODDSFLOW_TAKER).toBeUndefined()
+	it('has the fork deployment at the addresses dev-fork.sh produces', () => {
+		const fork = addresses.DEPLOYMENTS[addresses.FORK_CHAIN_ID]
+		expect(fork?.router).toBe(getAddress('0x5fbdb2315678afecb367f032d93f642f64180aa3'))
+		expect(fork?.taker).toBe(getAddress('0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'))
 	})
 })

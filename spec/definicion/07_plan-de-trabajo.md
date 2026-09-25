@@ -34,8 +34,8 @@ El detalle operativo —qué se corre antes de cada commit y en qué orden— vi
 | ---- | --- | ----- | ----- | ------ |
 | ~~Def~~ | ~~Definición 01–06 y 09, kit de marca, feedback inicial~~ | ~~A + B~~ | — | ~~Hasta el sábado 05:45~~ |
 | 0 | Andamiaje y compuerta del día 1 | A + B | 3 | Sábado 06:00–09:00 |
-| ~~1~~ | ~~Contratos: opcodes, router, `OddsFlowTaker`, pruebas~~ | ~~A~~ | ~~10~~ | ~~Cerrada el sábado 26 a las ~08:30 JST~~ |
-| 2 | `packages/core` y la web contra el fork | B | 10 | Sábado 09:00–19:00 |
+| ~~1~~ | ~~Contratos: opcodes, router, `OddsFlowTaker`, pruebas~~ | ~~A~~ | ~~10~~ | ~~Cerrada el sábado 26 a las 06:12 JST~~ |
+| ~~2~~ | ~~`packages/core` y la web contra el fork~~ | ~~B~~ | ~~10~~ | ~~Cerrada el sábado 26 a las 07:00 JST~~ |
 | 3 | Integración en Base: despliegue y llenado real | A + B | 5 | Sábado 19:00–domingo 00:00 |
 | — | Turnos de sueño | A, luego B | 4 + 4 | A 00:00–04:00 · B 03:00–07:00 |
 | 4 | Demo y entrega | A + B | 5 (escalonadas) | Domingo 00:00–07:00, margen hasta el cierre |
@@ -57,7 +57,7 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 **Verificación:** `pnpm check`, `pnpm test` y `forge build` corren en limpio en local y en CI; la web levanta con el favicon y el título de la marca; **la prueba de la compuerta pasa en el fork** con el precio fijo exacto, en `quote` y en `swap`.
 
-> **Compuerta pasada el sábado 26 a las ~06:50 JST**, con el camino principal: `GateForkTest` llena a 0.20 exactos en `quote` y `swap`, exact-in y exact-out, sobre el Aqua oficial y un mercado real de Seer. El plan B por `Extruction` no hace falta.
+> **Compuerta pasada el sábado 26 a las ~05:55 JST**, con el camino principal: `GateForkTest` llena a 0.20 exactos en `quote` y `swap`, exact-in y exact-out, sobre el Aqua oficial y un mercado real de Seer. El plan B por `Extruction` no hace falta.
 
 **Compuerta, 09:00:** si la prueba no pasa antes de las 09:00, la fase 1 arranca con el plan B del [05](./05_stack-y-arquitectura.md#10-riesgos-técnicos): la misma lógica como contrato de `Extruction` en el router oficial. No se sigue peleando con el router redesplegado después de esa hora.
 
@@ -75,7 +75,7 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 - ~~Script de despliegue (`pnpm deploy:base`) con `--account deployer --verify`, probado contra el fork.~~
 - ~~Medir el gas de una compra que recorre 1, 3 y 5 órdenes, y fijar el máximo ([05 §6](./05_stack-y-arquitectura.md#6-el-cálculo-central-el-precio-fijo-y-el-reparto-en-una-compra)).~~
 
-> **Fase 1 verificada el sábado 26, ~08:30 JST:** 46 pruebas en verde sobre el fork de Base — las 8 reglas del 05 §5 (`RulesForkTest`), 20 de `OddsFlowTaker`, `CoreInvariants` a 0.20, 0.37 y 0.99 — y cobertura de `src/` en 97 % líneas, 98 % sentencias, 92 % ramas, 95 % funciones. La compra de punta a punta con dos makers es `test_buy_sweepsOrdersBestFirst`. Los scripts de despliegue y del mercado de la demo corren en simulación contra Base.
+> **Fase 1 verificada el sábado 26, 06:12 JST:** 46 pruebas en verde sobre el fork de Base — las 8 reglas del 05 §5 (`RulesForkTest`), 20 de `OddsFlowTaker`, `CoreInvariants` a 0.20, 0.37 y 0.99 — y cobertura de `src/` en 97 % líneas, 98 % sentencias, 92 % ramas, 95 % funciones. La compra de punta a punta con dos makers es `test_buy_sweepsOrdersBestFirst`. Los scripts de despliegue y del mercado de la demo corren en simulación contra Base.
 
 **Verificación:** `pnpm test:contracts` en verde sobre el fork de Base, con las pruebas negativas y `CoreInvariants` incluidas, y `pnpm coverage:contracts` en 90 % o más; una compra de punta a punta en el fork (dos órdenes de dos makers, una contraparte, un mercado real de Seer) deja a cada uno con los tokens y el sUSDS esperados al centavo.
 
@@ -85,12 +85,16 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 **Objetivo:** las cinco pantallas del [04 §5](./04_diseno-de-solucion.md#5-pantallas), contra el router desplegado en un fork local, con las reglas de interfaz del [09 §7](./09_marca-y-seo.md#7-reglas-de-interfaz).
 
-- `packages/core`: direcciones de Base, construir el programa de una orden con la tabla de opcodes propia, `strategyHash`, libro de órdenes desde `Shipped` / `Docked`, estado derivado de cada orden, cálculo de una compra (qué órdenes, cuánto, precio promedio). Todo con pruebas; umbral del 90 %.
-- **La prueba que vale por dos:** el `strategyHash` de TypeScript coincide con el de Solidity. Se coordina con A a media fase.
-- Antes de construir la primera pantalla, proponer dos direcciones de composición y elegir una ([09 §10](./09_marca-y-seo.md#10-pendientes)). Quince minutos, no más.
-- Pantallas, en este orden: **Mercado** (comprar) → **Nuevas órdenes** (aprobar y publicar con `wallet_sendCalls`) → **Mis órdenes** (cancelar) → **Mercados** → **Posiciones** (cobrar).
-- Cada pantalla con todos sus estados ([09 §7](./09_marca-y-seo.md#7-reglas-de-interfaz)) y el resumen previo a cada firma.
-- `generateMetadata` en la página de mercado; `noindex` en las páginas de wallet.
+- ~~`packages/core`: direcciones de Base, construir el programa de una orden con la tabla de opcodes propia, `strategyHash`, libro de órdenes desde `Shipped` / `Docked`, estado derivado de cada orden, cálculo de una compra (qué órdenes, cuánto, precio promedio). Todo con pruebas; umbral del 90 %.~~
+- ~~**La prueba que vale por dos:** el `strategyHash` de TypeScript coincide con el de Solidity. Se coordina con A a media fase.~~
+- ~~Antes de construir la primera pantalla, proponer dos direcciones de composición y elegir una ([09 §10](./09_marca-y-seo.md#10-pendientes)). Quince minutos, no más.~~
+- ~~Pantallas, en este orden: **Mercado** (comprar) → **Nuevas órdenes** (aprobar y publicar con `wallet_sendCalls`) → **Mis órdenes** (cancelar) → **Mercados** → **Posiciones** (cobrar).~~
+- ~~Cada pantalla con todos sus estados ([09 §7](./09_marca-y-seo.md#7-reglas-de-interfaz)) y el resumen previo a cada firma.~~
+- ~~`generateMetadata` en la página de mercado; `noindex` en las páginas de wallet.~~
+
+> **Fase 2 verificada el sábado 26, ~07:00 JST**, contra el fork local (`scripts/dev-fork.sh`): desde la web se compró 100 NO llenando una orden YES a 0.25 (en la cadena: 100 NO y 75 inválidos al comprador por 75 sUSDS, 100 YES y 25 inválidos al maker por 25, `OddsFlowTaker` en cero), se publicaron dos órdenes de 10 000 sUSDS cada una con un saldo de 10 000, y se canceló una. `packages/core` en 100 % con la paridad de `strategyHash` en verde. **Sin verificar:** la vista de 390 px — la ventana del navegador de prueba no aceptó el cambio de tamaño; queda para revisión manual.
+>
+> **Hallazgo que cambia la demo:** el único mercado binario de Seer abierto en Base es el nuestro. Los otros 154 ya abrieron a respuestas o no son binarios. La demo de "dos mercados, un saldo" necesita un segundo mercado propio (`DEMO_MARKET_NAME` distinto con `pnpm demo:market`).
 
 **Verificación:** `pnpm test` con el umbral cumplido y la prueba de paridad de `strategyHash` en verde; contra un fork local (`anvil --fork-url`) con el router de A, se publica una orden desde una cuenta, se compra desde otra y se cancela una tercera, todo desde la web; revisión en 390 px y 1440 px.
 
@@ -126,7 +130,7 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 ## Decisiones del plan
 
 - **El mercado de la demo se crea el sábado temprano, con apertura a respuestas el lunes 28.** Las órdenes tienen que vencer, como tarde, en esa apertura ([04 §6](./04_diseno-de-solucion.md#6-reglas-de-negocio)), así que el mercado tiene que seguir abierto durante la demo del domingo. Consecuencia: no se resuelve antes del cierre, y **el cobro se muestra en el fork** avanzando el tiempo y respondiendo en Reality.eth. Es honesto y se dice así en la demo.
-- **Dos mercados en la demo:** el nuestro y uno existente de Seer que siga abierto. Así se ve que OddsFlow funciona sobre cualquier mercado binario de Seer en Base, no solo sobre uno hecho a medida.
+- **Dos mercados en la demo, los dos creados por nosotros.** El plan era el nuestro y uno existente de Seer, pero el 26 de septiembre no queda ningún otro mercado binario abierto en Base. El segundo mercado se crea con `pnpm demo:market` y otra pregunta.
 - **El PR de `FixedPriceSwap` a `1inch/swap-vm` va después del hackathon** ([08](./08_roadmap.md)). En 27 horas no cabe prepararlo bien, y uno mal preparado es peor que ninguno.
 
 ---
