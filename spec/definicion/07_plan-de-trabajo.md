@@ -48,14 +48,16 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 **Objetivo:** que las dos personas puedan trabajar en paralelo a las 09:00, y saber si el camino principal de los contratos funciona antes de invertir diez horas en él.
 
-- Unir los PR de documentación a `main` (PR #1 del README y el de `docs/spec-definicion`).
-- **B:** monorepo con pnpm workspaces; app de Next en `apps/web` armada alrededor de los archivos de marca y SEO ya existentes ([09 §9](./09_marca-y-seo.md#9-dónde-vive-cada-cosa)): `layout.tsx` con Barlow por `next/font`, `metadata`, `viewport` y `<JsonLd />`. `packages/core` vacío con Vitest y el umbral del 90 %. Biome. CI de GitHub Actions ([06 §5](./06_tecnologias.md#5-desarrollo-y-calidad)). Pre-commit en `.githooks`.
+- ~~Unir los PR de documentación a `main` (PR #1 del README y el de `docs/spec-definicion`).~~
+- ~~**B:** monorepo con pnpm workspaces; app de Next en `apps/web` armada alrededor de los archivos de marca y SEO ya existentes ([09 §9](./09_marca-y-seo.md#9-dónde-vive-cada-cosa)): `layout.tsx` con Barlow por `next/font`, `metadata`, `viewport` y `<JsonLd />`. `packages/core` vacío con Vitest y el umbral del 90 %. Biome. CI de GitHub Actions ([06 §5](./06_tecnologias.md#5-desarrollo-y-calidad)). Pre-commit en `.githooks`.~~
 - **B:** crear el **mercado de la demo** en Seer con `pnpm demo:market` (ver *Decisiones del plan*).
-- **A:** `packages/contracts` con Foundry; `forge install` de `1inch/swap-vm@v1.0.2`, `1inch/aqua@0.1.0`, OpenZeppelin 5.4.0 y `solidity-utils` 6.9.7, con sus remappings; mismos ajustes de compilador que SwapVM.
-- **A, la compuerta:** en un fork de Base, desplegar un `AquaSwapVMRouter` con un `FixedPriceSwap` mínimo, publicar con `ship` en el **Aqua oficial** una orden `Deadline` + `FixedPriceSwap` para ese router, y llenarla con `quote` y `swap`. Confirmar de paso que la interfaz del Aqua desplegado coincide con el tag `0.1.0` ([06 §10](./06_tecnologias.md#10-pendientes)).
+- ~~**A:** `packages/contracts` con Foundry; `forge install` de `1inch/swap-vm@v1.0.2`, `1inch/aqua@0.1.0`, OpenZeppelin 5.4.0 y `solidity-utils` 6.9.7, con sus remappings; mismos ajustes de compilador que SwapVM.~~
+- ~~**A, la compuerta:** en un fork de Base, desplegar un `AquaSwapVMRouter` con un `FixedPriceSwap` mínimo, publicar con `ship` en el **Aqua oficial** una orden `Deadline` + `FixedPriceSwap` para ese router, y llenarla con `quote` y `swap`. Confirmar de paso que la interfaz del Aqua desplegado coincide con el tag `0.1.0` ([06 §10](./06_tecnologias.md#10-pendientes)).~~
 - Preguntar a los mentores de 1inch las preguntas abiertas del [feedback](../feedback/01_1inch.md#preguntas-abiertas-para-los-mentores), en persona, esa misma mañana.
 
 **Verificación:** `pnpm check`, `pnpm test` y `forge build` corren en limpio en local y en CI; la web levanta con el favicon y el título de la marca; **la prueba de la compuerta pasa en el fork** con el precio fijo exacto, en `quote` y en `swap`.
+
+> **Compuerta pasada el sábado 26 a las ~06:50 JST**, con el camino principal: `GateForkTest` llena a 0.20 exactos en `quote` y `swap`, exact-in y exact-out, sobre el Aqua oficial y un mercado real de Seer. El plan B por `Extruction` no hace falta.
 
 **Compuerta, 09:00:** si la prueba no pasa antes de las 09:00, la fase 1 arranca con el plan B del [05](./05_stack-y-arquitectura.md#10-riesgos-técnicos): la misma lógica como contrato de `Extruction` en el router oficial. No se sigue peleando con el router redesplegado después de esa hora.
 
@@ -63,17 +65,17 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 ## Fase 1 — Contratos (A)
 
-**Objetivo:** los dos opcodes, el router y `OddsFlowTaker`, con las pruebas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) escritas antes que el código y vistas fallar.
+**Objetivo:** los dos opcodes, el router y `OddsFlowTaker`, con las pruebas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) y cubrimiento de 90 % o más.
 
-- `FixedPriceSwap`: exact-in y exact-out con redondeo a favor del maker, solo en la dirección declarada. Fuzz de precios y montos.
-- `OnlyUnresolvedCondition`: revierte con `payoutDenominator(conditionId) > 0`.
+- ~~`FixedPriceSwap`: exact-in y exact-out con redondeo a favor del maker, solo en la dirección declarada. Fuzz de precios y montos.~~
+- ~~`OnlyUnresolvedCondition`: revierte con `payoutDenominator(conditionId) > 0`.~~
 - Router: `AquaSwapVMRouter` de `v1.0.2` con los dos opcodes en su tabla. Programa completo: `OnlyUnresolvedCondition` → `Deadline` → `FixedPriceSwap` → `Salt`. Correr `CoreInvariants`.
 - `OddsFlowTaker`: compra con creación de tokens para **una** orden (flash del sUSDS del maker, aporte de la contraparte, `splitPosition` en Seer, `push` del SÍ, reparto de inválidos, mínimo de la contraparte). Después, el recorrido de varias órdenes, de mayor a menor precio, saltando las que no pueden cubrir.
 - Las pruebas negativas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó), todas, más "`OddsFlowTaker` termina con saldo cero".
 - Script de despliegue (`pnpm deploy:base`) con `--account deployer --verify`, probado contra el fork.
 - Medir el gas de una compra que recorre 1, 3 y 5 órdenes, y fijar el máximo ([05 §6](./05_stack-y-arquitectura.md#6-el-cálculo-central-el-precio-fijo-y-el-reparto-en-una-compra)).
 
-**Verificación:** `pnpm test:contracts` en verde sobre el fork de Base, con las pruebas negativas y `CoreInvariants` incluidas; una compra de punta a punta en el fork (dos órdenes de dos makers, una contraparte, un mercado real de Seer) deja a cada uno con los tokens y el sUSDS esperados al centavo.
+**Verificación:** `pnpm test:contracts` en verde sobre el fork de Base, con las pruebas negativas y `CoreInvariants` incluidas, y `pnpm coverage:contracts` en 90 % o más; una compra de punta a punta en el fork (dos órdenes de dos makers, una contraparte, un mercado real de Seer) deja a cada uno con los tokens y el sUSDS esperados al centavo.
 
 ---
 
