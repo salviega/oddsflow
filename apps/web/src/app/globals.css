@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Brand tokens. Source of truth: brand/README.md and spec/definicion/09_marca-y-seo.md */
+@theme {
+	--color-lock: #0f2b2e;
+	--color-spillway: #e7eae4;
+	--color-gauge: #f2c12e;
+	--color-mist: #a9b8b5;
+	--color-silt: #7d8f8c;
+	--color-yes: #2e9e57;
+	--color-no: #d2483e;
+
+	/* --font-barlow is set by next/font in layout.tsx (weights 400, 500, 600) */
+	--font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+	color-scheme: dark;
+}
+
+body {
+	background-color: var(--color-lock);
+	color: var(--color-spillway);
+	font-family: var(--font-sans);
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-gauge);
+	outline-offset: 2px;
+}
