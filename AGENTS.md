@@ -31,7 +31,7 @@ a warning to note and move past.
 1. **Unit tests pass with coverage at 90% or above.** `pnpm test` enforces
    it on `packages/core` through the `coverage.thresholds` in
    `vitest.config.ts`, so the command itself fails under the floor.
-   `pnpm test:contracts` passes on a Base fork, and `pnpm coverage:contracts`
+   `pnpm test:contracts` passes on a Gnosis fork, and `pnpm coverage:contracts`
    fails if `packages/contracts/src` is under 90%. Never a separate "check
    the %" step.
 2. `pnpm typecheck` — clean.
@@ -139,7 +139,7 @@ floor and the tests named below.
 - **Forbidden must fail** (`05_stack-y-arquitectura.md` §5): wrong
   direction, wrong token, over the cap, taker not delivering, after the
   deadline, resolved condition — each one reverts. If one of these passes,
-  a maker can lose sUSDS without getting their tokens.
+  a maker can lose sDAI without getting their tokens.
 - **Fixed price fuzz:** `FixedPriceSwap` never makes the maker pay more than
   the order's price, exact-in or exact-out.
 - **`strategyHash` parity:** TypeScript and Solidity build the same program

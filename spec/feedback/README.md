@@ -13,7 +13,7 @@ No es una queja unilateral: cada archivo abre con lo que funcionó bien.
 | 1inch | [01_1inch.md](./01_1inch.md) | Aqua y SwapVM son el núcleo del producto: cualquier diferencia entre sus docs y sus contratos desplegados cambia el diseño de la orden |
 
 Seer no es sponsor, así que lo que se encuentre de Seer (por ejemplo, que su
-colateral en Base es sUSDS y la documentación no lo dice) va al
+colateral en Gnosis es sDAI y la documentación no lo dice) va al
 [03](../definicion/03_bounties.md), no aquí.
 
 ## Cómo se usa cada archivo

@@ -14,13 +14,13 @@
 - **Punto de partida:** sábado 26, 05:45 JST. La definición (01–06 y 09), el kit de marca y los archivos de SEO ya están en el repo. No hay código.
 - **Cierre:** domingo 27. **Hora exacta por confirmar en el sitio de ETHGlobal**; el plan asume **09:00 JST** y deja la entrega lista a las 07:00, con dos horas de margen.
 - **Quién hace qué:** **A** = contratos (Solidity, Foundry, despliegue). **B** = `packages/core` y la web. Las fases 1 y 2 corren en paralelo; se juntan en la 3.
-- **Dónde se despliega:** todo en **Base mainnet**, con dinero real y montos chicos. Las pruebas corren sobre un fork de Base.
+- **Dónde se despliega:** todo en **Gnosis Chain** (Base hasta la mañana del sábado; ver *Decisiones del plan*), con dinero real y montos chicos. Las pruebas corren sobre un fork de Gnosis.
 
 Cada fase termina **demostrable y verificable**. Si el tiempo se acaba en cualquier punto, lo que hay ya sirve.
 
 **Reglas que atraviesan todas las fases**, no negociables por velocidad:
 
-1. **Nada llega a Base sin las pruebas de "lo prohibido debe fallar" del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) en verde.** Es dinero real, de nosotros y de quien pruebe la demo.
+1. **Nada llega a la cadena sin las pruebas de "lo prohibido debe fallar" del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) en verde.** Es dinero real, de nosotros y de quien pruebe la demo.
 2. **Commit y push al terminar cada tarea, no al final de la fase.** 1inch mira el historial, y cada commit tiene que caer dentro de la ventana del evento.
 3. **Cada fase entra a `main` por pull request**, como dice [`AGENTS.md`](../../AGENTS.md). Un PR por fase, no por tarea: a este ritmo, más PRs es fricción sin revisión real.
 4. **El feedback a 1inch se escribe en el momento** en [`spec/feedback/01_1inch.md`](../feedback/01_1inch.md), con la evidencia a mano.
@@ -36,7 +36,7 @@ El detalle operativo —qué se corre antes de cada commit y en qué orden— vi
 | 0 | Andamiaje y compuerta del día 1 | A + B | 3 | Sábado 06:00–09:00 |
 | ~~1~~ | ~~Contratos: opcodes, router, `OddsFlowTaker`, pruebas~~ | ~~A~~ | ~~10~~ | ~~Cerrada el sábado 26 a las 06:12 JST~~ |
 | ~~2~~ | ~~`packages/core` y la web contra el fork~~ | ~~B~~ | ~~10~~ | ~~Cerrada el sábado 26 a las 07:00 JST~~ |
-| 3 | Integración en Base: despliegue y llenado real | A + B | 5 | Sábado 19:00–domingo 00:00 |
+| 3 | Integración en Gnosis: despliegue y llenado real | A + B | 5 | Sábado 19:00–domingo 00:00 |
 | — | Turnos de sueño | A, luego B | 4 + 4 | A 00:00–04:00 · B 03:00–07:00 |
 | 4 | Demo y entrega | A + B | 5 (escalonadas) | Domingo 00:00–07:00, margen hasta el cierre |
 
@@ -100,16 +100,17 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 
 ---
 
-## Fase 3 — Integración en Base (A + B)
+## Fase 3 — Integración en Gnosis (A + B)
 
-**Objetivo:** OddsFlow funcionando en Base mainnet, con un llenado real que cualquiera pueda comprobar en el explorador.
+**Objetivo:** OddsFlow funcionando en Gnosis Chain, con un llenado real que cualquiera pueda comprobar en el explorador.
 
 - ~~Desplegar el router y `OddsFlowTaker` en Base, verificados en Basescan y en Sourcify. Direcciones y bloque de despliegue a `packages/core/src/addresses.ts`.~~ Sábado 26, 06:59 JST: router `0xB874…7140` y taker `0xdD02…04Cd`, verificados, propiedad del router renunciada. Mercados de la demo `0xf2Bf…08Da` y `0x2f15…B57E`.
+- ~~Mudanza a Gnosis y despliegue ahí~~ Sábado 26, ~07:50 JST: router `0xB874…7140` y taker `0xdD02…04Cd` en Gnosis (mismas direcciones que en Base), verificados en Gnosisscan, propiedad del router renunciada. Las 51 pruebas de contratos pasan sobre un fork de Gnosis con un mercado real, y la compra de punta a punta desde la web funciona en el fork local de Gnosis.
 - Desplegar la web en Vercel con `NEXT_PUBLIC_SITE_URL`.
-- **El flujo completo en Base, con dinero real y montos chicos:** el apostador publica dos órdenes (SÍ en el mercado de la demo y en uno existente) con una sola confirmación; la contraparte compra NO desde otra wallet y llena una de ellas; lo que puede cubrir la otra orden baja en la misma transacción; el apostador cancela la segunda.
+- **El flujo completo en Gnosis, con dinero real y montos chicos:** el apostador publica dos órdenes en dos mercados reales de Seer (por ejemplo, Bitcoin y Macron) y en uno existente) con una sola confirmación; la contraparte compra NO desde otra wallet y llena una de ellas; lo que puede cubrir la otra orden baja en la misma transacción; el apostador cancela la segunda.
 - Checklist de SEO del [09 §8](./09_marca-y-seo.md#8-seo): Lighthouse, `view-source`, vista previa en X y en Discord.
 
-**Verificación:** los hashes de las transacciones de publicar, comprar y cancelar, en Basescan, con las transferencias de sUSDS y de tokens de resultado esperadas. Van al `CHANGELOG.md` y a la sección *Evidence* del README.
+**Verificación:** los hashes de las transacciones de publicar, comprar y cancelar, en Gnosisscan, con las transferencias de sDAI y de tokens de resultado esperadas. Van al `CHANGELOG.md` y a la sección *Evidence* del README.
 
 ---
 
@@ -130,7 +131,8 @@ Una fase que se atrasa come de la siguiente según *Orden y recortes*, nunca de 
 ## Decisiones del plan
 
 - **El mercado de la demo se crea el sábado temprano, con apertura a respuestas el lunes 28.** Las órdenes tienen que vencer, como tarde, en esa apertura ([04 §6](./04_diseno-de-solucion.md#6-reglas-de-negocio)), así que el mercado tiene que seguir abierto durante la demo del domingo. Consecuencia: no se resuelve antes del cierre, y **el cobro se muestra en el fork** avanzando el tiempo y respondiendo en Reality.eth. Es honesto y se dice así en la demo.
-- **Dos mercados en la demo, los dos creados por nosotros.** El plan era el nuestro y uno existente de Seer, pero el 26 de septiembre no queda ningún otro mercado binario abierto en Base. El segundo mercado se crea con `pnpm demo:market` y otra pregunta.
+- **Mudanza de Base a Gnosis (sábado 26, ~07:30 JST).** Con OddsFlow ya en Base, la web solo podía mostrar nuestros dos mercados: Seer en Base no tiene ningún otro mercado operable. En Gnosis hay 12 mercados SÍ/NO simples abiertos, con preguntas reales. Los contratos no cambiaron. Evidencia en el [03](./03_bounties.md#marco).
+- **La demo usa mercados reales de Seer**, no creados por nosotros: en Gnosis los hay. Los dos mercados creados en Base quedan como historia.
 - **El PR de `FixedPriceSwap` a `1inch/swap-vm` va después del hackathon** ([08](./08_roadmap.md)). En 27 horas no cabe prepararlo bien, y uno mal preparado es peor que ninguno.
 
 ---
@@ -149,7 +151,7 @@ Si falta tiempo, se corta **en este orden**, de arriba hacia abajo:
 **Nunca se corta:**
 
 - Las pruebas negativas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó).
-- **Al menos un llenado real en Base con dos órdenes del mismo saldo.** Es lo que pide el track, y es lo que demuestra la idea del [02](./02_solucion.md).
+- **Al menos un llenado real en Gnosis con dos órdenes del mismo saldo.** Es lo que pide el track, y es lo que demuestra la idea del [02](./02_solucion.md).
 - El opcode propio, o su plan B por `Extruction` si la compuerta falla.
 - Commits empujados durante todo el evento.
 

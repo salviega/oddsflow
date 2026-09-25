@@ -2,7 +2,9 @@
 // No number ever shows the 18 on-chain decimals: amounts are cut to cents,
 // and anything below one cent reads as a threshold, not as zeros.
 
-const SUSDS_DECIMALS = 18
+import { COLLATERAL_SYMBOL } from './addresses'
+
+const COLLATERAL_DECIMALS = 18
 
 function assertPrice(price: number): void {
 	if (!Number.isFinite(price) || price < 0 || price > 1) {
@@ -43,9 +45,9 @@ function formatUnits(amount: bigint, decimals: number, unit: string): string {
 	return `${groupThousands(whole)}.${fraction} ${unit}`
 }
 
-/** An sUSDS amount in base units: `1000n * 10n ** 18n -> '1,000.00 sUSDS'`. */
-export function formatAmount(amount: bigint, decimals: number = SUSDS_DECIMALS): string {
-	return formatUnits(amount, decimals, 'sUSDS')
+/** A collateral amount in base units: `1000n * 10n ** 18n -> '1,000.00 sDAI'`. */
+export function formatAmount(amount: bigint, decimals: number = COLLATERAL_DECIMALS): string {
+	return formatUnits(amount, decimals, COLLATERAL_SYMBOL)
 }
 
 export type Side = 'YES' | 'NO'

@@ -17,7 +17,9 @@ El proyecto se presenta a **1 bounty**, y cae sobre la pieza central del product
 
 Los mercados no se construyen: se usan los de **Seer**, que no es sponsor del hackathon. Su documentación está en [seer-3.gitbook.io/seer-documentation](https://seer-3.gitbook.io/seer-documentation).
 
-**Red: Base mainnet.** Aqua no tiene testnets: sus contratos solo existen en mainnets, con la misma dirección en todas (Aqua `0x1111113ccf1426a8e30e2bff5e005d929bf6a90a`, router SwapVM `0x111111338c5091e8440b67b168bae16a668ac0de`). Seer está en Ethereum, Gnosis, Optimism y Base. En las cuatro coinciden los dos; se elige Base por el gas. **El colateral de Seer en Base es sUSDS** (`0x5875eEE11Cf8398102FdAd704C9E96607675467a`, 18 decimales, ERC-4626 de Sky): lo devuelve `MarketFactory.collateralToken()` en Base, verificado el 2026-09-26; la documentación no lo dice. Hay 154 mercados creados en Base (1.590 en Gnosis, con sDAI). El `Router` de Base solo expone `splitPosition`/`mergePositions`/`redeemPositions` en sUSDS, sin variantes que conviertan desde USDC o USDS. Direcciones de Seer en Base: `MarketFactory` `0x886Ef0A78faBbAE942F1dA1791A8ed02a5aF8BC6`, `Router` `0x3124e97ebF4c9592A17d40E54623953Ff3c77a73`, `MarketView` `0x179d8F8c811B8C759c33809dbc6c5ceDc62D05DD`. Los tests corren sobre un fork de Base; la demo, sobre Base real.
+**Red: Gnosis Chain (desde el 26 de septiembre; antes, Base).** Con OddsFlow ya desplegado en Base, la web mostraba solo nuestros dos mercados de demo: de los 156 mercados de Seer en Base, 146 binarios ya habían abierto a respuestas (142 hace más de 90 días) y ninguno ajeno seguía operable. En Gnosis, de 1.590 mercados, 131 binarios siguen abiertos y 12 son SÍ/NO simples sobre sDAI (categóricos, sin mercado padre), con preguntas reales: Bitcoin sobre 100.000 USD a fin de 2026, la renuncia de Macron, el fin de la guerra en Ucrania. Aqua y el router SwapVM `1.0.2` están desplegados en Gnosis en las mismas direcciones; el colateral de Seer es sDAI (`0xaf20…3701`, 18 decimales); el `GnosisRouter` de Seer (`0xeC90…0fB8`) tiene las mismas `splitPosition`, `mergePositions` y `redeemPositions`; el timeout de Reality.eth es el mismo (3,5 días). Los contratos de OddsFlow no cambiaron: el colateral y el router de Seer ya eran parámetros. Todo verificado onchain el 26 de septiembre. El despliegue en Base quedó en `0xB874…7140` / `0xdD02…04Cd`, sin uso.
+
+**Historia — Red: Base mainnet.** Aqua no tiene testnets: sus contratos solo existen en mainnets, con la misma dirección en todas (Aqua `0x1111113ccf1426a8e30e2bff5e005d929bf6a90a`, router SwapVM `0x111111338c5091e8440b67b168bae16a668ac0de`). Seer está en Ethereum, Gnosis, Optimism y Base. En las cuatro coinciden los dos; se elige Base por el gas. **El colateral de Seer en Base es sUSDS** (`0x5875eEE11Cf8398102FdAd704C9E96607675467a`, 18 decimales, ERC-4626 de Sky): lo devuelve `MarketFactory.collateralToken()` en Base, verificado el 2026-09-26; la documentación no lo dice. Hay 154 mercados creados en Base (1.590 en Gnosis, con sDAI). El `Router` de Base solo expone `splitPosition`/`mergePositions`/`redeemPositions` en sUSDS, sin variantes que conviertan desde USDC o USDS. Direcciones de Seer en Base: `MarketFactory` `0x886Ef0A78faBbAE942F1dA1791A8ed02a5aF8BC6`, `Router` `0x3124e97ebF4c9592A17d40E54623953Ff3c77a73`, `MarketView` `0x179d8F8c811B8C759c33809dbc6c5ceDc62D05DD`. Los tests corren sobre un fork de Base; la demo, sobre Base real.
 
 ---
 
@@ -69,7 +71,7 @@ La demo muestra lo que pide el track: una compra llenando una o varias órdenes 
 ## Requisitos que atraviesan todos
 
 - Historial de commits distribuido a lo largo del hackathon.
-- Demo con transferencias de tokens ejecutadas onchain, en Base mainnet.
+- Demo con transferencias de tokens ejecutadas onchain, en Gnosis Chain.
 - Repositorio público con contratos, tests y README con instrucciones de setup y prueba.
 
 ---
@@ -77,8 +79,8 @@ La demo muestra lo que pide el track: una compra llenando una o varias órdenes 
 ## Pendientes
 
 - Confirmar qué incluyen los otros $2.000 del premio total de 1inch ($7.000), además de este track.
-- ~~Decidir entre fork de Base y Base Sepolia.~~ Base mainnet: Aqua no tiene testnet y redesplegar Aqua + Seer en Sepolia sería más trabajo que el gas real. Ver el marco.
+- ~~Decidir entre fork de Base y Base Sepolia.~~ Primero Base mainnet, después Gnosis (ver el marco): Aqua no tiene testnet y redesplegar Aqua + Seer en Sepolia sería más trabajo que el gas real. Ver el marco.
 - Confirmar con los mentores de 1inch si operar sobre mercados de Seer cumple con "posición DeFi sofisticada", o si esperan que la lógica del mercado también viva en la app.
 - ~~Instrucción propia de SwapVM: sí o no.~~ Sí, y obligada: el router oficial no tiene precio fijo y `LimitSwap` no sirve sobre Aqua. Dos opcodes nuevos, `FixedPriceSwap` y `OnlyUnresolvedCondition`, en un router redesplegado sobre el Aqua oficial (ver sección 1).
-- **Compuerta del día 1:** comprobar en un fork de Base que una estrategia `OnlyUnresolvedCondition` + `Deadline` + `FixedPriceSwap`, publicada con `ship` en el Aqua oficial para el router redesplegado, se llena al precio fijo tanto en `quote` como en `swap`. Si el router redesplegado falla, el plan B es la misma lógica vía `Extruction` en el router oficial.
+- **Compuerta del día 1:** comprobar en un fork de Base (repetido después en Gnosis) que una estrategia `OnlyUnresolvedCondition` + `Deadline` + `FixedPriceSwap`, publicada con `ship` en el Aqua oficial para el router redesplegado, se llena al precio fijo tanto en `quote` como en `swap`. Si el router redesplegado falla, el plan B es la misma lógica vía `Extruction` en el router oficial.
 - Confirmar con los mentores si un opcode nuevo en un SwapVM redesplegado puntúa más que la misma lógica vía `Extruction` en el oficial.

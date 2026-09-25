@@ -1,6 +1,6 @@
 'use client'
 
-import { AQUA, aquaAbi, formatAmount, formatPrice, formatProbability, priceToNumber, SUSDS } from '@oddsflow/core'
+import { AQUA, aquaAbi, COLLATERAL, formatAmount, formatPrice, formatProbability, priceToNumber } from '@oddsflow/core'
 import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -68,7 +68,7 @@ export function MyOrders() {
 	const d = deployment()
 	const [tx, setTx] = useState<TxState>({ kind: 'idle' })
 	const { data: balance } = useReadContract({
-		address: SUSDS,
+		address: COLLATERAL,
 		abi: erc20Abi,
 		functionName: 'balanceOf',
 		args: address ? [address] : undefined,
@@ -92,7 +92,7 @@ export function MyOrders() {
 					data: encodeFunctionData({
 						abi: aquaAbi,
 						functionName: 'dock',
-						args: [d.router, o.strategyHash, [o.params.tokenIn, SUSDS]],
+						args: [d.router, o.strategyHash, [o.params.tokenIn, COLLATERAL]],
 					}),
 				},
 			])

@@ -25,11 +25,11 @@ Compite contra la forma actual de apostar a un precio: depositar o reservar capi
 
 ### Para quien apuesta
 
-**1. Elegir.** Escoge los mercados y, en cada uno, el lado y el precio máximo. Por ejemplo, con 1.000 sUSDS en la wallet: SÍ a 0.20 o menos en el mercado A y SÍ a 0.25 o menos en el B, y cada orden puede usar los 1.000.
+**1. Elegir.** Escoge los mercados y, en cada uno, el lado y el precio máximo. Por ejemplo, con 1.000 sDAI en la wallet: SÍ a 0.20 o menos en el mercado A y SÍ a 0.25 o menos en el B, y cada orden puede usar los 1.000.
 
-**2. Publicar.** Aprueba el uso de su sUSDS una sola vez y publica una orden por mercado, todas en una sola confirmación si su wallet lo permite. Publicar cuesta gas, pero **no se mueve dinero**.
+**2. Publicar.** Aprueba el uso de su sDAI una sola vez y publica una orden por mercado, todas en una sola confirmación si su wallet lo permite. Publicar cuesta gas, pero **no se mueve dinero**.
 
-**3. Esperar.** El sUSDS sigue en su wallet. El mismo saldo respalda todas sus órdenes a la vez.
+**3. Esperar.** El sDAI sigue en su wallet. El mismo saldo respalda todas sus órdenes a la vez.
 
 **4. Ejecutarse.** Cuando aparece alguien dispuesto a darle su lado a ese precio, en una sola transacción el apostador paga y recibe sus tokens. Los tokens llegan de una de dos formas: se crean en ese momento, juntando su dinero con el de quien quiere el lado contrario, o se los vende alguien que ya los tenía. En las dos paga como máximo su precio. Lo que se usó sale de su wallet, así que sus otras órdenes cuentan con ese saldo menos.
 
@@ -65,6 +65,6 @@ Límites a tener en cuenta:
 ## Alcance inicial
 
 - **Mercados:** binarios (SÍ/NO) de **Seer**, cuyos tokens de resultado ya son ERC20.
-- **Red:** **Base**, donde coinciden Seer y Aqua.
-- **Colateral:** **sUSDS**, el que usan los mercados de Seer en Base (verificado onchain, ver [03](./03_bounties.md)). El apostador y la contraparte operan en sUSDS; convertir desde USDC queda fuera de este alcance.
+- **Red:** **Gnosis Chain**, donde coinciden Aqua y los mercados activos de Seer ([03](./03_bounties.md#marco)).
+- **Colateral:** **sDAI**, el que usan los mercados de Seer en Gnosis (verificado onchain, ver [03](./03_bounties.md)). El apostador y la contraparte operan en sDAI; convertir desde USDC queda fuera de este alcance.
 - **Órdenes:** compra de SÍ o NO a precio máximo, con tope de monto y vencimiento, como tarde, al abrir el mercado a respuestas.

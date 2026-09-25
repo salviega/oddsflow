@@ -47,7 +47,7 @@ contract InvariantsForkTest is ForkBase, CoreInvariants {
         _fund(maker, 100_000e18);
         ISwapVM.Order memory order = _order(maker, yes, price);
         _ship(order, yes, 100_000e18);
-        assertAllInvariantsWithConfig(router, order, address(yes), address(SUSDS), _config());
+        assertAllInvariantsWithConfig(router, order, address(yes), address(COLLATERAL), _config());
     }
 
     function test_invariants_atTwentyCents() public {

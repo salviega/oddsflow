@@ -1,17 +1,17 @@
 import Link from 'next/link'
 import { BestPrices } from '@/components/BestPrices'
 import { formatOpening } from '@/lib/dates'
-import { getOpenMarkets } from '@/lib/markets'
+import { getOpenMarketsCached } from '@/lib/markets-cached'
 import { site } from '@/lib/site'
 
 // Rendered per request so the build never depends on the RPC; see /api/markets.
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
-	let markets: Awaited<ReturnType<typeof getOpenMarkets>> = []
+	let markets: Awaited<ReturnType<typeof getOpenMarketsCached>> = []
 	let failed = false
 	try {
-		markets = await getOpenMarkets()
+		markets = await getOpenMarketsCached()
 	} catch {
 		failed = true
 	}
@@ -20,7 +20,7 @@ export default async function Home() {
 			<section className="max-w-2xl space-y-4">
 				<h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{site.tagline}</h1>
 				<p className="text-lg text-mist">
-					Place limit orders on many prediction markets with the same sUSDS. It stays in your wallet and moves only when
+					Place limit orders on many prediction markets with the same sDAI. It stays in your wallet and moves only when
 					someone takes the other side — on the one market where they do.
 				</p>
 				<div className="flex flex-wrap gap-3">
@@ -39,7 +39,7 @@ export default async function Home() {
 						Could not read the markets from the network. Reload in a moment.
 					</p>
 				) : markets.length === 0 ? (
-					<p className="text-mist">No binary Seer markets are open on Base right now.</p>
+					<p className="text-mist">No binary Seer markets are open on Gnosis right now.</p>
 				) : (
 					<ul className="divide-y divide-silt/40 border-y border-silt/40">
 						{markets.map((m) => (

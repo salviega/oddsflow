@@ -9,7 +9,7 @@ export const MAX_ORDERS_PER_TRADE = 10
 
 export type Quote = {
 	strategyHash: Hex
-	/** sUSDS per outcome token, 1e18 scale. */
+	/** sDAI per outcome token, 1e18 scale. */
 	price: bigint
 	/** What the order can pay today: min(cap left, maker balance, maker approval to Aqua). */
 	available: bigint
@@ -19,14 +19,14 @@ export type Fill = {
 	strategyHash: Hex
 	/** Outcome tokens that change hands on this order. */
 	tokens: bigint
-	/** sUSDS the order's maker pays. */
+	/** sDAI the order's maker pays. */
 	makerPays: bigint
 }
 
 export type TradePlan = {
 	fills: Fill[]
 	tokens: bigint
-	/** Buy: sUSDS the buyer pays. Sell: sUSDS the seller receives. */
+	/** Buy: sDAI the buyer pays. Sell: sDAI the seller receives. */
 	amount: bigint
 }
 

@@ -45,8 +45,8 @@ A price is a level on a gauge. Always show it as a decimal between `0.00` and
 `1.00`, two decimals, tabular figures. The implied probability, when shown,
 goes next to it in Mist (`0.20 · 20%` in tables, `0.20 (20%)` in prose).
 
-Amounts are in sUSDS, two decimals, thousands grouped, unit always shown:
-`1,000.00 sUSDS`. The dollar value is a secondary reference in Mist
+Amounts are in sDAI, two decimals, thousands grouped, unit always shown:
+`1,000.00 sDAI`. The dollar value is a secondary reference in Mist
 (`≈ $1,052.40`), never the number that gets signed.
 
 ## Clear space

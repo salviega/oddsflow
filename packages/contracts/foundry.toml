@@ -25,7 +25,7 @@ yul = true
 yulDetails = { stackAllocation = true, optimizerSteps = "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul Tpeul]jmul[jul] VcTOcul jmul : fDnTOcmu" }
 
 [rpc_endpoints]
-base = "${BASE_RPC_URL}"
+gnosis = "${GNOSIS_RPC_URL}"
 
 [fmt]
 single_line_statement_blocks = "multi"

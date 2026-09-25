@@ -17,18 +17,19 @@ import { FixedPriceSwapArgsBuilder } from "../src/instructions/FixedPriceSwap.so
 import { OnlyUnresolvedConditionArgsBuilder } from "../src/instructions/OnlyUnresolvedCondition.sol";
 import { ISeerMarket, ISeerRouter } from "../src/interfaces/ISeer.sol";
 
-/// Base mainnet fork with the official Aqua, a fresh OddsFlowRouter and
+/// Gnosis fork with the official Aqua, a fresh OddsFlowRouter and
 /// OddsFlowTaker, and a real binary Seer market.
 abstract contract ForkBase is Test, OddsFlowOpcodes {
     using ProgramBuilder for Program;
 
     Aqua constant AQUA = Aqua(0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a);
-    IERC20 constant SUSDS = IERC20(0x5875eEE11Cf8398102FdAd704C9E96607675467a);
-    ISeerRouter constant SEER_ROUTER = ISeerRouter(0x3124e97ebF4c9592A17d40E54623953Ff3c77a73);
-    address constant CONDITIONAL_TOKENS = 0xAb797C4C6022A401c31543E316D3cd04c67a87fC;
-    address constant WETH = 0x4200000000000000000000000000000000000006;
-    // Binary Seer market on Base, open to answers but not resolved (checked 2026-09-26)
-    address constant MARKET = 0x12C4fE96f354C128c8CaD897C19dAAFFc8b99Beb;
+    IERC20 constant COLLATERAL = IERC20(0xaf204776c7245bF4147c2612BF6e5972Ee483701);
+    ISeerRouter constant SEER_ROUTER = ISeerRouter(0xeC9048b59b3467415b1a38F63416407eA0c70fB8);
+    address constant CONDITIONAL_TOKENS = 0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce;
+    address constant WXDAI = 0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d;
+    // Binary Seer market on Gnosis, open until 31 Dec 2026: "Will the price of Bitcoin be above
+    // 100,000 USD on 31-12-2026?" (checked 2026-09-26)
+    address constant MARKET = 0xA202b53641147D9A57AF98CB87723D97FF3162D6;
 
     uint256 constant YES = 0;
     uint256 constant NO = 1;
@@ -43,9 +44,9 @@ abstract contract ForkBase is Test, OddsFlowOpcodes {
     constructor() OddsFlowOpcodes(0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a) { }
 
     function setUp() public virtual {
-        vm.createSelectFork(vm.rpcUrl("base"));
-        router = new OddsFlowRouter(address(AQUA), WETH, address(this), "OddsFlow SwapVM", "1.0.2");
-        taker = new OddsFlowTaker(AQUA, ISwapVM(address(router)), SUSDS, SEER_ROUTER);
+        vm.createSelectFork(vm.rpcUrl("gnosis"));
+        router = new OddsFlowRouter(address(AQUA), WXDAI, address(this), "OddsFlow SwapVM", "1.0.2");
+        taker = new OddsFlowTaker(AQUA, ISwapVM(address(router)), COLLATERAL, SEER_ROUTER);
         (yes,) = ISeerMarket(MARKET).wrappedOutcome(0);
         (no,) = ISeerMarket(MARKET).wrappedOutcome(1);
         (invalid,) = ISeerMarket(MARKET).wrappedOutcome(2);
@@ -60,7 +61,7 @@ abstract contract ForkBase is Test, OddsFlowOpcodes {
                 OnlyUnresolvedConditionArgsBuilder.build(CONDITIONAL_TOKENS, ISeerMarket(MARKET).conditionId())
             ),
             p.build(_deadline, ControlsArgsBuilder.buildDeadline(uint40(deadline))),
-            p.build(_fixedPriceSwap, FixedPriceSwapArgsBuilder.build(address(token), address(SUSDS), price)),
+            p.build(_fixedPriceSwap, FixedPriceSwapArgsBuilder.build(address(token), address(COLLATERAL), price)),
             p.build(_salt, ControlsArgsBuilder.buildSalt(++salt))
         );
     }
@@ -108,25 +109,25 @@ abstract contract ForkBase is Test, OddsFlowOpcodes {
     function _ship(ISwapVM.Order memory order, IERC20 token, uint256 cap) internal returns (bytes32 strategyHash) {
         address[] memory tokens = new address[](2);
         tokens[0] = address(token);
-        tokens[1] = address(SUSDS);
+        tokens[1] = address(COLLATERAL);
         uint256[] memory amounts = new uint256[](2);
         amounts[1] = cap;
         vm.startPrank(order.maker);
-        SUSDS.approve(address(AQUA), type(uint256).max);
+        COLLATERAL.approve(address(AQUA), type(uint256).max);
         strategyHash = AQUA.ship(address(router), abi.encode(order), tokens, amounts);
         vm.stopPrank();
     }
 
     function _fund(address account, uint256 amount) internal {
-        deal(address(SUSDS), account, amount);
+        deal(address(COLLATERAL), account, amount);
     }
 
     /// Gives `account` `amount` of every outcome by splitting sUSDS on Seer.
     function _split(address account, uint256 amount) internal {
         _fund(account, amount);
         vm.startPrank(account);
-        SUSDS.approve(address(SEER_ROUTER), amount);
-        SEER_ROUTER.splitPosition(SUSDS, MARKET, amount);
+        COLLATERAL.approve(address(SEER_ROUTER), amount);
+        SEER_ROUTER.splitPosition(COLLATERAL, MARKET, amount);
         vm.stopPrank();
     }
 
@@ -175,7 +176,7 @@ abstract contract ForkBase is Test, OddsFlowOpcodes {
     }
 
     function _assertTakerEmpty() internal view {
-        assertEq(SUSDS.balanceOf(address(taker)), 0, "taker holds no sUSDS");
+        assertEq(COLLATERAL.balanceOf(address(taker)), 0, "taker holds no collateral");
         assertEq(yes.balanceOf(address(taker)), 0, "taker holds no YES");
         assertEq(no.balanceOf(address(taker)), 0, "taker holds no NO");
         assertEq(invalid.balanceOf(address(taker)), 0, "taker holds no invalid");

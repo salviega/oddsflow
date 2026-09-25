@@ -12,7 +12,7 @@ Stack en uso: contratos oficiales en Base mainnet — Aqua `0x1111113ccf1426a8e3
 - **`Extruction` está documentada como se debe documentar un punto de extensión.** La natspec de `contracts/instructions/Extruction.sol` dice qué puede tocar el contrato externo (registros, contador de programa, argumentos del taker), qué guardas debe poner el maker antes de llamarlo, y que en modo `swap` puede escribir estado mientras en `quote` solo lee. Con eso se diseñó la orden a precio fijo sin tener que adivinar.
 - **Aqua se entiende leyendo el código.** `pull` y `push` en `src/Aqua.sol` son diez líneas cada una y responden solas las dos preguntas de diseño que teníamos (ver la bitácora del 2026-09-26).
 - **El evento `Shipped` trae el programa completo.** Aqua no tiene una función que liste las estrategias de un maker, pero `Shipped(maker, app, strategyHash, strategy)` emite los bytes del programa, así que un libro de órdenes se puede reconstruir desde la cadena sin backend de confianza.
-- **Direcciones iguales en todas las redes.** Una sola constante para Aqua y otra para el router.
+- **Direcciones iguales en todas las redes.** Una sola constante para Aqua y otra para el router. Se probó en serio el 26 de septiembre: OddsFlow se mudó de Base a Gnosis (donde están los mercados activos de Seer) sin tocar una línea de los contratos ni de la integración con Aqua; el despliegue oficial `1.0.2` estaba ahí con las mismas direcciones y el mismo comportamiento, y las 51 pruebas de fork pasaron a la primera.
 
 ---
 

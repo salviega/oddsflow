@@ -35,7 +35,7 @@ Workspaces de pnpm y no Turborepo: con dos paquetes y una app, `pnpm -r` alcanza
 
 **Por qué Foundry.** SwapVM y Aqua están hechos con Foundry, y **no están publicados en npm** pese a los badges de sus READMEs: `npm view @1inch/swap-vm` y `npm view @1inch/aqua` no devuelven nada (verificado el 26 de septiembre; ver [feedback](../feedback/01_1inch.md)). Con `forge install` se traen en el tag exacto, se compilan en el mismo árbol, y `CoreInvariants` se hereda tal cual. Hay que remapear a mano OpenZeppelin y `solidity-utils`, porque sus `remappings.txt` apuntan a `node_modules/`. `forge coverage` necesita `--ir-minimum` con via-IR.
 
-**Anvil** corre el fork de Base para las pruebas (`anvil --fork-url $BASE_RPC_URL`, o `forge test --fork-url`). La demo va en Base real.
+**Anvil** corre el fork de Gnosis para las pruebas (`anvil --fork-url $BASE_RPC_URL`, o `forge test --fork-url`). La demo va en Gnosis real.
 
 ---
 
@@ -51,7 +51,7 @@ Workspaces de pnpm y no Turborepo: con dos paquetes y una app, `pnpm -r` alcanza
 | **Barlow** (`next/font/google`) | 400 · 500 · 600 | La tipografía de la marca ([09 §4](./09_marca-y-seo.md#4-tipografía)). Se sirve desde el propio dominio, sin salto de diseño |
 | **lucide-react** | 1.48 | Iconos. Los componentes son funciones propias en `apps/web/src/components/`; no hace falta una librería de componentes para cinco pantallas |
 
-**Conectar la wallet sin kit.** Los conectores de wagmi (`injected` y `baseAccount`) más un botón propio. Base Account es la que asegura `wallet_sendCalls` atómico en la demo ([05 §10](./05_stack-y-arquitectura.md#10-riesgos-técnicos)).
+**Conectar la wallet sin kit.** El conector `injected` de wagmi (MetaMask, Rabby) más un botón propio. `baseAccount` salió con la mudanza a Gnosis: es la wallet de Coinbase para Base. Sin envío agrupado garantizado, publicar varias órdenes cae a confirmaciones en serie. Una wallet que admita EIP-5792 sigue pudiendo agrupar.
 
 ---
 
@@ -75,9 +75,9 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | **Vitest** | 5.0 | Pruebas de `packages/core`: construir y decodificar programas, estado derivado de una orden, recorrido de órdenes de una compra, esquemas |
 | **`@vitest/coverage-v8`** | 5.0 | Cubrimiento de Vitest. `pnpm test` corre con `--coverage`; el umbral vive en `vitest.config.ts` |
 | **`forge coverage`** | — | Cubrimiento de contratos, con el piso de 90 % aplicado por `scripts/check-coverage.mjs` |
-| **`forge test`** | — | Pruebas de contratos sobre fork de Base, incluidas las de "lo prohibido debe fallar" del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) y `CoreInvariants` |
+| **`forge test`** | — | Pruebas de contratos sobre fork de Gnosis, incluidas las de "lo prohibido debe fallar" del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó) y `CoreInvariants` |
 | **`forge fmt`** | — | Formato de Solidity |
-| **GitHub Actions** | — | En cada PR: `pnpm check`, `pnpm test`, `forge fmt --check`, `forge test` con fork de Base, build de la web |
+| **GitHub Actions** | — | En cada PR: `pnpm check`, `pnpm test`, `forge fmt --check`, `forge test` con fork de Gnosis, build de la web |
 | **`.githooks`** | — | `commit-msg` (Conventional Commits) ya existe. Se agrega pre-commit: `pnpm check` y `forge fmt --check` |
 
 **Una prueba que vale por dos.** `packages/core` construye el programa de una orden y calcula su `strategyHash`; una prueba de Foundry construye el mismo programa en Solidity y compara. Si divergen, la web estaría publicando una orden y mostrando otra.
@@ -92,9 +92,9 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 | Servicio | Plan | Para qué |
 | --- | --- | --- |
-| **RPC de Base** (Alchemy u otro) | Gratuito | Fork de pruebas, CI y la web. El RPC público (`mainnet.base.org`) sirve para lecturas sueltas, pero limita `eth_getLogs` |
+| **RPC de Gnosis** (Alchemy u otro) | Gratuito | Fork de pruebas, CI y la web. El RPC público (`mainnet.base.org`) sirve para lecturas sueltas, pero limita `eth_getLogs` |
 | **Vercel** | Hobby | Hosting de la web |
-| **Etherscan API v2** (Basescan) | Gratuito | Verificar el router y `OddsFlowTaker` con `forge verify-contract` |
+| **Etherscan API v2** (Gnosisscan) | Gratuito | Verificar el router y `OddsFlowTaker` con `forge verify-contract` |
 | **Sourcify** | Gratuito | Segunda verificación, con coincidencia exacta de bytecode y metadata |
 | **GitHub Actions** | Gratuito (repo público) | CI en cada PR |
 
@@ -115,7 +115,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 **La llave de despliegue vive en el `.env` de la raíz** (`DEPLOYER_PRIVATE_KEY`, gitignorado), por decisión del 26 de septiembre: la cuenta `0x5b1d…8258` es de uso exclusivo para desplegar y se fondea solo con lo que cuesta (menos de 0,001 ETH). Reemplaza al keystore cifrado de Foundry que planteaba la primera versión de este documento. La regla que no cambia: la llave nunca entra a un archivo versionado ni a una variable `NEXT_PUBLIC_`.
 
-**Las direcciones no son variables de entorno.** Las de Base (Aqua, sUSDS, Seer, Reality.eth, nuestro router y `OddsFlowTaker`) y el bloque de despliegue del router viven en `packages/core/src/addresses.ts`, versionadas: cambiar una dirección es un commit, no un ajuste de hosting.
+**Las direcciones no son variables de entorno.** Las de Gnosis (Aqua, sDAI, Seer, Reality.eth, nuestro router y `OddsFlowTaker`) y el bloque de despliegue del router viven en `packages/core/src/addresses.ts`, versionadas: cambiar una dirección es un commit, no un ajuste de hosting.
 
 ---
 
@@ -123,14 +123,14 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 | Script | Qué hace |
 | --- | --- |
-| `pnpm dev` | La web en local, contra Base |
+| `pnpm dev` | La web en local, contra Gnosis |
 | `pnpm check` | Biome: lint y formato |
 | `pnpm typecheck` | `tsc --noEmit` en todos los paquetes |
 | `pnpm test` | Vitest con `--coverage`; falla si `packages/core` baja del 90 % |
-| `pnpm test:contracts` | `forge test` sobre un fork de Base (alias `base` de `foundry.toml`) |
+| `pnpm test:contracts` | `forge test` sobre un fork de Gnosis (alias `base` de `foundry.toml`) |
 | `pnpm coverage:contracts` | `forge coverage` sobre el fork; falla si `packages/contracts/src` baja de 90 % |
 | `pnpm build` | Build de la web |
-| `pnpm deploy:base` | `forge script` del router y `OddsFlowTaker` en Base, con `--account deployer --verify`, y escribe las direcciones en `packages/core` |
+| `pnpm deploy:base` | `forge script` del router y `OddsFlowTaker` en Gnosis, con `--account deployer --verify`, y escribe las direcciones en `packages/core` |
 | `pnpm demo:market` | Crea el mercado binario de la demo en Seer (`MarketFactory`) e imprime sus tokens y su `conditionId` |
 
 ---
@@ -141,7 +141,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | --- | --- | --- |
 | Hardhat | Foundry | SwapVM y Aqua no están en npm y están hechos con Foundry; `CoreInvariants` se hereda directo |
 | `1inch/swap-vm` en `main` | Tag `v1.0.2` | `main` cambió el ABI de `swap` y el layout de fuentes; el router desplegado es `v1.0.2` |
-| `1inch/aqua` `v1.0.0` | Tag `0.1.0` | Es la que declara SwapVM `v1.0.2`. Queda por confirmar que la interfaz coincide con el Aqua desplegado en Base (§10) |
+| `1inch/aqua` `v1.0.0` | Tag `0.1.0` | Es la que declara SwapVM `v1.0.2`. Queda por confirmar que la interfaz coincide con el Aqua desplegado en Gnosis (§10) |
 | RainbowKit / ConnectKit | Conectores de wagmi + botón propio | Los dos piden wagmi 2 como peer; wagmi 3 trae `useSendCalls` estable. Un botón de conectar no justifica fijar una versión vieja |
 | Subgraph | `eth_getLogs` desde `packages/core` | Un solo router nuevo: los logs desde su bloque de despliegue caben en pocas llamadas. Un subgraph es otro servicio y otro dato que puede mentir |
 | Llave en `.env` | Keystore cifrado de Foundry | Es la llave que despliega en mainnet |
@@ -151,6 +151,6 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 ## 10. Pendientes
 
-- ~~**Aqua desplegado en Base vs. tag `0.1.0`.**~~ Coinciden: `ship`, `rawBalances`, `safeBalances`, `pull` y `push` del Aqua oficial funcionan con la interfaz del tag en `GateForkTest` (26 de septiembre).
+- ~~**Aqua desplegado en Gnosis vs. tag `0.1.0`.**~~ Coinciden: `ship`, `rawBalances`, `safeBalances`, `pull` y `push` del Aqua oficial funcionan con la interfaz del tag en `GateForkTest` (26 de septiembre).
 - **`@1inch/swap-vm-sdk` 0.4 y el ABI `v1.0`.** Confirmar que codifica `Order` y `takerTraits` para el ABI desplegado y no para el de `main`. Si no, `packages/core` codifica el programa con su propia tabla, que igual hace falta para los dos opcodes nuevos.
-- **`permit` en sUSDS de Base** (compartido con el [05 §11](./05_stack-y-arquitectura.md#11-pendientes)): decide si la primera compra es una firma o dos llamadas agrupadas.
+- **`permit` en sDAI de Gnosis** (compartido con el [05 §11](./05_stack-y-arquitectura.md#11-pendientes)): decide si la primera compra es una firma o dos llamadas agrupadas.

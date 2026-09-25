@@ -18,7 +18,7 @@ export const site = {
 	title: 'OddsFlow — Limit orders for prediction markets',
 	tagline: 'One balance. Every market.',
 	description:
-		'Limit orders across many prediction markets with one balance. Your sUSDS stays in your wallet until someone takes the other side. Built on 1inch Aqua.',
+		'Limit orders across many prediction markets with one balance. Your sDAI stays in your wallet until someone takes the other side. Built on 1inch Aqua.',
 	keywords: [
 		'prediction markets',
 		'limit orders',
@@ -28,7 +28,7 @@ export const site = {
 		'SwapVM',
 		'shared liquidity',
 		'capital efficiency',
-		'Base',
+		'Gnosis Chain',
 		'DeFi',
 	],
 

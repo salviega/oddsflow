@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	}
 	return {
 		title: market.name,
-		description: `Buy YES or NO on "${market.name}" at the price open orders offer, in one transaction. Orders on OddsFlow share one sUSDS balance across markets.`,
+		description: `Buy YES or NO on "${market.name}" at the price open orders offer, in one transaction. Orders on OddsFlow share one sDAI balance across markets.`,
 		alternates: { canonical: `/markets/${market.address}` },
 	}
 }

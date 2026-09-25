@@ -24,6 +24,24 @@ Versioning cadence, while pre-1.0:
 
 ## [Unreleased]
 
+### Changed
+
+- OddsFlow moved from Base to Gnosis Chain, where Seer's markets are live:
+  on Base no Seer market besides our own was still tradable (146 of 146
+  binary markets had opened to answers, 142 of them over 90 days ago), while
+  Gnosis has 12 plain YES/NO markets open on sDAI. Router
+  [`0xB874…7140`](https://gnosisscan.io/tx/0x5398b9de2cf357d29dc52ec550856110db3471110f1d6ba9178a12c2667a62b3)
+  and taker
+  [`0xdD02…04Cd`](https://gnosisscan.io/tx/0xeeee4dc328c37110c477f7dce21e9e40316f7ee444bec27896007591d7b85d3d)
+  on Gnosis, verified on Gnosisscan, router ownership renounced in tx
+  [`0x4e0c…d887`](https://gnosisscan.io/tx/0x4e0c7dd79063032bd18861a14d30c66168e8fc8889892546d420688582b3d887).
+  The contracts did not change; the collateral (sDAI) and Seer's GnosisRouter
+  were already parameters. Evidence: the 51 fork tests pass on Gnosis against
+  a real Seer market.
+- The web lists only plain YES/NO Seer markets on sDAI: categorical, no
+  parent market, outcomes exactly Yes and No. On Gnosis, 119 of the 131 open
+  binary markets are scalar or conditional and cannot back OddsFlow orders.
+
 ### Added
 
 - OddsFlow on Base mainnet. `OddsFlowRouter` at

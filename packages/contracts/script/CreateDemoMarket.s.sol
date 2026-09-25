@@ -26,14 +26,14 @@ interface ISeerMarketFactory {
     function createCategoricalMarket(CreateMarketParams calldata params) external returns (address);
 }
 
-/// Creates the binary demo market on Seer (Base). The question and opening time
+/// Creates a binary market on Seer (Gnosis). The question and opening time
 /// come from DEMO_MARKET_NAME and DEMO_OPENING_TIME (unix seconds). Orders on
 /// it must expire by the opening time, so it opens after the demo (spec 07).
-/// Seer's factory on Base sets a 3.5-day answer timeout, so the market cannot
+/// Seer's factory on Gnosis sets a 3.5-day answer timeout, so the market cannot
 /// resolve before the hackathon closes: claiming is shown on a fork.
 contract CreateDemoMarket is Script {
-    ISeerMarketFactory constant FACTORY = ISeerMarketFactory(0x886Ef0A78faBbAE942F1dA1791A8ed02a5aF8BC6);
-    uint256 constant MIN_BOND = 0.0005 ether; // Seer's own minimum on Base
+    ISeerMarketFactory constant FACTORY = ISeerMarketFactory(0x83183DA839Ce8228E31Ae41222EaD9EDBb5cDcf1);
+    uint256 constant MIN_BOND = 10 ether; // Seer's own minimum on Gnosis (xDAI)
 
     function run() external returns (address market) {
         string memory name = vm.envOr("DEMO_MARKET_NAME", string("Will OddsFlow win a prize at ETHGlobal Tokyo 2026?"));

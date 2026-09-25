@@ -44,7 +44,7 @@ contract OpcodesHarness is FixedPriceSwap, OnlyUnresolvedCondition {
 contract OpcodesTest is Test {
     OpcodesHarness harness = new OpcodesHarness();
     address constant YES = address(0xAAAA);
-    address constant SUSDS = address(0xBBBB);
+    address constant COLLATERAL = address(0xBBBB);
 
     function _query(address tokenIn, address tokenOut, bool isExactIn) internal pure returns (SwapQuery memory q) {
         q.tokenIn = tokenIn;
@@ -64,14 +64,14 @@ contract OpcodesTest is Test {
 
     function test_exactIn_paysAmountTimesPrice() public view {
         SwapRegisters memory s = harness.fixedPriceSwap(
-            _query(YES, SUSDS, true), _exactIn(100e18), FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18)
+            _query(YES, COLLATERAL, true), _exactIn(100e18), FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
         );
         assertEq(s.amountOut, 20e18);
     }
 
     function test_exactOut_asksAmountOverPrice() public view {
         SwapRegisters memory s = harness.fixedPriceSwap(
-            _query(YES, SUSDS, false), _exactOut(20e18), FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18)
+            _query(YES, COLLATERAL, false), _exactOut(20e18), FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
         );
         assertEq(s.amountIn, 100e18);
     }
@@ -80,57 +80,67 @@ contract OpcodesTest is Test {
     function testFuzz_makerNeverPaysMoreThanPrice(uint256 amount, uint256 price, bool isExactIn) public view {
         amount = bound(amount, 1, 1e30);
         price = bound(price, 1, 1e18);
-        bytes memory args = FixedPriceSwapArgsBuilder.build(YES, SUSDS, price);
+        bytes memory args = FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, price);
         SwapRegisters memory s = isExactIn
-            ? harness.fixedPriceSwap(_query(YES, SUSDS, true), _exactIn(amount), args)
-            : harness.fixedPriceSwap(_query(YES, SUSDS, false), _exactOut(amount), args);
+            ? harness.fixedPriceSwap(_query(YES, COLLATERAL, true), _exactIn(amount), args)
+            : harness.fixedPriceSwap(_query(YES, COLLATERAL, false), _exactOut(amount), args);
         // paid / received <= price  <=>  amountOut * 1e18 <= amountIn * price
         assertLe(s.amountOut * 1e18, s.amountIn * price);
     }
 
     function test_revert_wrongTokenIn() public {
-        vm.expectRevert(abi.encodeWithSelector(FixedPriceSwap.FixedPriceSwapWrongDirection.selector, SUSDS, SUSDS));
+        vm.expectRevert(
+            abi.encodeWithSelector(FixedPriceSwap.FixedPriceSwapWrongDirection.selector, COLLATERAL, COLLATERAL)
+        );
         harness.fixedPriceSwap(
-            _query(SUSDS, SUSDS, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18)
+            _query(COLLATERAL, COLLATERAL, true),
+            _exactIn(1e18),
+            FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
         );
     }
 
     function test_revert_oppositeDirection() public {
-        vm.expectRevert(abi.encodeWithSelector(FixedPriceSwap.FixedPriceSwapWrongDirection.selector, SUSDS, YES));
+        vm.expectRevert(abi.encodeWithSelector(FixedPriceSwap.FixedPriceSwapWrongDirection.selector, COLLATERAL, YES));
         harness.fixedPriceSwap(
-            _query(SUSDS, YES, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18)
+            _query(COLLATERAL, YES, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
         );
     }
 
     function test_revert_wrongTokenOut() public {
         vm.expectRevert(abi.encodeWithSelector(FixedPriceSwap.FixedPriceSwapWrongDirection.selector, YES, YES));
         harness.fixedPriceSwap(
-            _query(YES, YES, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18)
+            _query(YES, YES, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
         );
     }
 
     function test_revert_zeroPrice() public {
         vm.expectRevert(FixedPriceSwap.FixedPriceSwapZeroPrice.selector);
-        harness.fixedPriceSwap(_query(YES, SUSDS, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0));
+        harness.fixedPriceSwap(
+            _query(YES, COLLATERAL, true), _exactIn(1e18), FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0)
+        );
     }
 
     function test_revert_recomputeExactIn() public {
         SwapRegisters memory s = _exactIn(1e18);
         s.amountOut = 1;
         vm.expectRevert(FixedPriceSwap.FixedPriceSwapRecomputeDetected.selector);
-        harness.fixedPriceSwap(_query(YES, SUSDS, true), s, FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18));
+        harness.fixedPriceSwap(
+            _query(YES, COLLATERAL, true), s, FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
+        );
     }
 
     function test_revert_recomputeExactOut() public {
         SwapRegisters memory s = _exactOut(1e18);
         s.amountIn = 1;
         vm.expectRevert(FixedPriceSwap.FixedPriceSwapRecomputeDetected.selector);
-        harness.fixedPriceSwap(_query(YES, SUSDS, false), s, FixedPriceSwapArgsBuilder.build(YES, SUSDS, 0.2e18));
+        harness.fixedPriceSwap(
+            _query(YES, COLLATERAL, false), s, FixedPriceSwapArgsBuilder.build(YES, COLLATERAL, 0.2e18)
+        );
     }
 
     function test_revert_missingArgs() public {
         vm.expectRevert(FixedPriceSwapArgsBuilder.FixedPriceSwapMissingArgs.selector);
-        harness.fixedPriceSwap(_query(YES, SUSDS, true), _exactIn(1e18), abi.encodePacked(YES));
+        harness.fixedPriceSwap(_query(YES, COLLATERAL, true), _exactIn(1e18), abi.encodePacked(YES));
     }
 
     // ── OnlyUnresolvedCondition ───────────────────────────────────────────

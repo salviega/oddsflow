@@ -25,6 +25,44 @@ export type Market = {
 	invalid: Address
 }
 
+// Only plain YES/NO markets on sDAI: categorical questions (Reality template
+// 2) with no parent market and exactly the outcomes Yes and No. Scalar markets
+// also have two outcomes (DOWN/UP), and conditional ones use another market's
+// outcome token as collateral; neither fits OddsFlow's orders.
+const shapeAbi = [
+	{ type: 'function', name: 'templateId', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] },
+	{ type: 'function', name: 'parentMarket', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
+	{
+		type: 'function',
+		name: 'outcomes',
+		stateMutability: 'view',
+		inputs: [{ name: 'index', type: 'uint256' }],
+		outputs: [{ type: 'string' }],
+	},
+] as const
+
+async function plainYesNo(addresses: readonly Address[]): Promise<Address[]> {
+	const r = await publicClient.multicall({
+		allowFailure: true,
+		contracts: addresses.flatMap((address) => [
+			{ address, abi: shapeAbi, functionName: 'templateId' } as const,
+			{ address, abi: shapeAbi, functionName: 'parentMarket' } as const,
+			{ address, abi: shapeAbi, functionName: 'outcomes', args: [0n] } as const,
+			{ address, abi: shapeAbi, functionName: 'outcomes', args: [1n] } as const,
+		]),
+	})
+	return addresses.filter((_, i) => {
+		const [template, parent, yes, no] = r.slice(i * 4, i * 4 + 4).map((x) => x?.result)
+		return (
+			template === 2n &&
+			typeof parent === 'string' &&
+			/^0x0{40}$/i.test(parent) &&
+			String(yes).toLowerCase() === 'yes' &&
+			String(no).toLowerCase() === 'no'
+		)
+	})
+}
+
 const factoryAbi = [
 	{ type: 'function', name: 'allMarkets', stateMutability: 'view', inputs: [], outputs: [{ type: 'address[]' }] },
 ] as const
@@ -81,7 +119,7 @@ export async function getMarket(address: string): Promise<Market | null> {
 			abi: seerMarketAbi,
 			functionName: 'numOutcomes',
 		})
-		if (outcomes !== 2n) {
+		if (outcomes !== 2n || (await plainYesNo([getAddress(address)])).length === 0) {
 			return null
 		}
 		const [market] = await readMarkets([getAddress(address)])
@@ -92,9 +130,9 @@ export async function getMarket(address: string): Promise<Market | null> {
 }
 
 /**
- * Binary Seer markets still open to trading, featured ones first, then by
- * closing time. Filters as early as possible: outcome count first, then the
- * opening time, and only the markets left get their full details read.
+ * Plain YES/NO Seer markets still open to trading, featured ones first, then
+ * by closing time. Filters as early as possible: outcome count, then shape,
+ * then opening time; only the markets left get their full details read.
  */
 export async function getOpenMarkets(): Promise<Market[]> {
 	const all = await publicClient.readContract({
@@ -106,7 +144,7 @@ export async function getOpenMarkets(): Promise<Market[]> {
 		allowFailure: true,
 		contracts: all.map((address) => ({ address, abi: seerMarketAbi, functionName: 'numOutcomes' }) as const),
 	})
-	const binary = all.filter((_, i) => counts[i]?.status === 'success' && counts[i]?.result === 2n)
+	const binary = await plainYesNo(all.filter((_, i) => counts[i]?.status === 'success' && counts[i]?.result === 2n))
 	const questions = await publicClient.multicall({
 		allowFailure: false,
 		contracts: binary.map((address) => ({ address, abi: seerMarketAbi, functionName: 'questionsIds' }) as const),
