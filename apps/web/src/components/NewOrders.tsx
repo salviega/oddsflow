@@ -10,6 +10,7 @@ import {
 	formatAmount,
 	formatProbability,
 	priceFromCents,
+	REALITY_ETH,
 } from '@oddsflow/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -18,13 +19,12 @@ import { useAccount, useReadContract } from 'wagmi'
 import { useOpenMarkets } from '@/hooks/useMarkets'
 import type { Side } from '@/lib/book'
 import { chain, deployment } from '@/lib/chain'
-import { formatOpening } from '@/lib/dates'
 import type { Market } from '@/lib/markets'
 import { type Call, explain, send } from '@/lib/tx'
 import { SignSummary } from './SignSummary'
 import { TxResult, type TxState } from './TxResult'
 
-type Row = { id: number; market: string; side: Side; cents: string; limit: string }
+type Row = { id: number; market: string; side: Side; cents: string; limit: string; days: string }
 
 function randomSalt(): bigint {
 	const words = crypto.getRandomValues(new Uint32Array(2))
@@ -51,16 +51,22 @@ function rowProblem(row: Row, market: Market | undefined): string | undefined {
 	if (!parseAmount(row.limit)) {
 		return 'Enter the most this order may spend.'
 	}
+	const days = Number(row.days)
+	if (!Number.isInteger(days) || days < 1 || days > 365) {
+		return 'Expiry must be between 1 and 365 days.'
+	}
 	return undefined
 }
 
-export function NewOrders() {
+export function NewOrders({ initialMarket = '' }: { initialMarket?: string }) {
 	const markets = useOpenMarkets()
 	const { address, chainId } = useAccount()
 	const queryClient = useQueryClient()
 	const d = deployment()
 	const [nextId, setNextId] = useState(2)
-	const [rows, setRows] = useState<Row[]>([{ id: 1, market: '', side: 'YES', cents: '20', limit: '' }])
+	const [rows, setRows] = useState<Row[]>([
+		{ id: 1, market: initialMarket, side: 'YES', cents: '20', limit: '', days: '7' },
+	])
 	const [tx, setTx] = useState<TxState>({ kind: 'idle' })
 
 	const { data: balance } = useReadContract({
@@ -119,7 +125,9 @@ export function NewOrders() {
 			const order = buildOrder(address, {
 				conditionalTokens: CONDITIONAL_TOKENS,
 				conditionId: market.conditionId,
-				deadline: market.openingTs,
+				realitio: REALITY_ETH,
+				questionId: market.questionId,
+				deadline: Math.floor(Date.now() / 1000) + Number(r.days) * 86_400,
 				tokenIn,
 				tokenOut: COLLATERAL,
 				price: priceFromCents(Number(r.cents)),
@@ -203,7 +211,7 @@ export function NewOrders() {
 										))}
 									</select>
 								</label>
-								<div className="grid gap-3 sm:grid-cols-3">
+								<div className="grid gap-3 sm:grid-cols-4">
 									<label className="block space-y-1">
 										<span className="text-sm text-mist">Buy</span>
 										<select
@@ -241,12 +249,23 @@ export function NewOrders() {
 											onChange={(e) => update(r.id, { limit: e.target.value })}
 										/>
 									</label>
+									<label className="block space-y-1">
+										<span className="text-sm text-mist">Expires in (days)</span>
+										<input
+											className="field"
+											inputMode="numeric"
+											value={r.days}
+											onChange={(e) => update(r.id, { days: e.target.value.replace(/\D/g, '') })}
+										/>
+									</label>
 								</div>
 								<p className="text-sm text-mist">
 									{Number.isInteger(cents) && cents >= 1 && cents <= 99
 										? `${r.side} at 0.${r.cents.padStart(2, '0')} is a ${formatProbability(cents / 100)} chance. `
 										: ''}
-									{market ? `Expires ${formatOpening(market.openingTs)}, when the market opens to answers.` : ''}
+									{market
+										? `Stops filling in ${r.days || '?'} days, or the moment anyone answers the question on Reality.eth.`
+										: ''}
 								</p>
 								{problems[i] && <p className="text-sm text-spillway">{problems[i]}</p>}
 							</li>
@@ -258,7 +277,7 @@ export function NewOrders() {
 				type="button"
 				className="btn-secondary"
 				onClick={() => {
-					setRows([...rows, { id: nextId, market: '', side: 'YES', cents: '20', limit: '' }])
+					setRows([...rows, { id: nextId, market: '', side: 'YES', cents: '20', limit: '', days: '7' }])
 					setNextId(nextId + 1)
 				}}
 			>
@@ -271,8 +290,9 @@ export function NewOrders() {
 					nothing, but you do not get into those markets.
 				</p>
 				<p>
-					An order is a fixed price that does not follow the news. If the outcome becomes obvious before the market
-					closes, someone can fill an order at its old price. Cancel it or pick a price you still want.
+					An order is a fixed price that does not follow the news. It stops filling the moment anyone answers the
+					question on Reality.eth, but not before: if the outcome becomes obvious earlier, someone can fill it at its
+					old price. Pick a short expiry for markets that move fast.
 				</p>
 			</div>
 

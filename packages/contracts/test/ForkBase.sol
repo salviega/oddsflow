@@ -15,6 +15,7 @@ import { OddsFlowOpcodes } from "../src/OddsFlowOpcodes.sol";
 import { OddsFlowTaker } from "../src/OddsFlowTaker.sol";
 import { FixedPriceSwapArgsBuilder } from "../src/instructions/FixedPriceSwap.sol";
 import { OnlyUnresolvedConditionArgsBuilder } from "../src/instructions/OnlyUnresolvedCondition.sol";
+import { OnlyUnansweredQuestionArgsBuilder } from "../src/instructions/OnlyUnansweredQuestion.sol";
 import { ISeerMarket, ISeerRouter } from "../src/interfaces/ISeer.sol";
 
 /// Gnosis fork with the official Aqua, a fresh OddsFlowRouter and
@@ -26,6 +27,7 @@ abstract contract ForkBase is Test, OddsFlowOpcodes {
     IERC20 constant COLLATERAL = IERC20(0xaf204776c7245bF4147c2612BF6e5972Ee483701);
     ISeerRouter constant SEER_ROUTER = ISeerRouter(0xeC9048b59b3467415b1a38F63416407eA0c70fB8);
     address constant CONDITIONAL_TOKENS = 0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce;
+    address constant REALITY = 0xE78996A233895bE74a66F451f1019cA9734205cc;
     address constant WXDAI = 0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d;
     // Binary Seer market on Gnosis, open until 31 Dec 2026: "Will the price of Bitcoin be above
     // 100,000 USD on 31-12-2026?" (checked 2026-09-26)
@@ -59,6 +61,10 @@ abstract contract ForkBase is Test, OddsFlowOpcodes {
             p.build(
                 _onlyUnresolvedCondition,
                 OnlyUnresolvedConditionArgsBuilder.build(CONDITIONAL_TOKENS, ISeerMarket(MARKET).conditionId())
+            ),
+            p.build(
+                _onlyUnansweredQuestion,
+                OnlyUnansweredQuestionArgsBuilder.build(REALITY, ISeerMarket(MARKET).questionsIds()[0])
             ),
             p.build(_deadline, ControlsArgsBuilder.buildDeadline(uint40(deadline))),
             p.build(_fixedPriceSwap, FixedPriceSwapArgsBuilder.build(address(token), address(COLLATERAL), price)),

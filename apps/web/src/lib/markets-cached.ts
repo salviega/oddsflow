@@ -1,8 +1,5 @@
 import { unstable_cache } from 'next/cache'
-import { getOpenMarkets } from './markets'
+import { getSeerMarkets } from './seer-api'
 
-/**
- * Server-side cache of the open markets: reading them means scanning ~1,600
- * Seer markets, so every server render shares one scan per minute.
- */
-export const getOpenMarketsCached = unstable_cache(getOpenMarkets, ['open-markets'], { revalidate: 60 })
+/** Seer's open markets, fetched once every five minutes for every visitor. */
+export const getMarketsCached = unstable_cache(getSeerMarkets, ['seer-markets'], { revalidate: 300 })

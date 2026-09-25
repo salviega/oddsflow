@@ -8,6 +8,9 @@ import {
     OnlyUnresolvedCondition,
     OnlyUnresolvedConditionArgsBuilder
 } from "../src/instructions/OnlyUnresolvedCondition.sol";
+import {
+    OnlyUnansweredQuestion, OnlyUnansweredQuestionArgsBuilder
+} from "../src/instructions/OnlyUnansweredQuestion.sol";
 
 contract ConditionalTokensMock {
     mapping(bytes32 => uint256) public payoutDenominator;
@@ -17,8 +20,16 @@ contract ConditionalTokensMock {
     }
 }
 
-/// Exposes the two internal instructions with a hand-built Context.
-contract OpcodesHarness is FixedPriceSwap, OnlyUnresolvedCondition {
+contract RealityMock {
+    mapping(bytes32 => uint32) public getFinalizeTS;
+
+    function answer(bytes32 questionId) external {
+        getFinalizeTS[questionId] = uint32(block.timestamp + 302_400);
+    }
+}
+
+/// Exposes the internal instructions with a hand-built Context.
+contract OpcodesHarness is FixedPriceSwap, OnlyUnresolvedCondition, OnlyUnansweredQuestion {
     function fixedPriceSwap(
         SwapQuery memory query,
         SwapRegisters memory swap,
@@ -33,6 +44,11 @@ contract OpcodesHarness is FixedPriceSwap, OnlyUnresolvedCondition {
         ctx.swap = swap;
         _fixedPriceSwap(ctx, args);
         return ctx.swap;
+    }
+
+    function onlyUnansweredQuestion(bytes calldata args) external view {
+        Context memory ctx;
+        _onlyUnansweredQuestion(ctx, args);
     }
 
     function onlyUnresolvedCondition(bytes calldata args) external view {
@@ -160,5 +176,24 @@ contract OpcodesTest is Test {
     function test_revert_unresolvedMissingArgs() public {
         vm.expectRevert(OnlyUnresolvedConditionArgsBuilder.OnlyUnresolvedConditionMissingArgs.selector);
         harness.onlyUnresolvedCondition(abi.encodePacked(address(1)));
+    }
+
+    // ── OnlyUnansweredQuestion ────────────────────────────────────────────
+
+    function test_unansweredQuestion_passes() public {
+        RealityMock reality = new RealityMock();
+        harness.onlyUnansweredQuestion(OnlyUnansweredQuestionArgsBuilder.build(address(reality), bytes32("q")));
+    }
+
+    function test_revert_answeredQuestion() public {
+        RealityMock reality = new RealityMock();
+        reality.answer(bytes32("q"));
+        vm.expectRevert(abi.encodeWithSelector(OnlyUnansweredQuestion.QuestionAlreadyAnswered.selector, bytes32("q")));
+        harness.onlyUnansweredQuestion(OnlyUnansweredQuestionArgsBuilder.build(address(reality), bytes32("q")));
+    }
+
+    function test_revert_unansweredMissingArgs() public {
+        vm.expectRevert(OnlyUnansweredQuestionArgsBuilder.OnlyUnansweredQuestionMissingArgs.selector);
+        harness.onlyUnansweredQuestion(abi.encodePacked(address(1)));
     }
 }

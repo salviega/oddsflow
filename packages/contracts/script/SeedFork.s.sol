@@ -11,6 +11,7 @@ import { Program, ProgramBuilder } from "@1inch/swap-vm/test/utils/ProgramBuilde
 import { OddsFlowOpcodes } from "../src/OddsFlowOpcodes.sol";
 import { FixedPriceSwapArgsBuilder } from "../src/instructions/FixedPriceSwap.sol";
 import { OnlyUnresolvedConditionArgsBuilder } from "../src/instructions/OnlyUnresolvedCondition.sol";
+import { OnlyUnansweredQuestionArgsBuilder } from "../src/instructions/OnlyUnansweredQuestion.sol";
 import { ISeerMarket } from "../src/interfaces/ISeer.sol";
 
 /// Local fork only (scripts/dev-fork.sh): publishes sample orders on MARKET from
@@ -20,6 +21,7 @@ contract SeedFork is Script, OddsFlowOpcodes {
 
     IAqua constant AQUA = IAqua(0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a);
     address constant SDAI = 0xaf204776c7245bF4147c2612BF6e5972Ee483701;
+    address constant REALITY = 0xE78996A233895bE74a66F451f1019cA9734205cc;
     address constant CONDITIONAL_TOKENS = 0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce;
     // Anvil's default accounts 1 and 2 ("test test ... junk")
     uint256 constant ALICE_KEY = 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d;
@@ -31,16 +33,18 @@ contract SeedFork is Script, OddsFlowOpcodes {
         (IERC20 yes,) = ISeerMarket(market).wrappedOutcome(0);
         (IERC20 no,) = ISeerMarket(market).wrappedOutcome(1);
         bytes32 conditionId = ISeerMarket(market).conditionId();
+        bytes32 questionId = ISeerMarket(market).questionsIds()[0];
 
-        _publish(ALICE_KEY, router, conditionId, yes, 0.2e18, 1000e18, deadline, 1);
-        _publish(ALICE_KEY, router, conditionId, yes, 0.25e18, 100e18, deadline, 2);
-        _publish(BOB_KEY, router, conditionId, no, 0.6e18, 500e18, deadline, 3);
+        _publish(ALICE_KEY, router, conditionId, questionId, yes, 0.2e18, 1000e18, deadline, 1);
+        _publish(ALICE_KEY, router, conditionId, questionId, yes, 0.25e18, 100e18, deadline, 2);
+        _publish(BOB_KEY, router, conditionId, questionId, no, 0.6e18, 500e18, deadline, 3);
     }
 
     function _publish(
         uint256 key,
         address router,
         bytes32 conditionId,
+        bytes32 questionId,
         IERC20 token,
         uint256 price,
         uint256 cap,
@@ -52,6 +56,7 @@ contract SeedFork is Script, OddsFlowOpcodes {
         Program memory p = ProgramBuilder.init(_opcodes());
         bytes memory program = bytes.concat(
             p.build(_onlyUnresolvedCondition, OnlyUnresolvedConditionArgsBuilder.build(CONDITIONAL_TOKENS, conditionId)),
+            p.build(_onlyUnansweredQuestion, OnlyUnansweredQuestionArgsBuilder.build(REALITY, questionId)),
             p.build(_deadline, ControlsArgsBuilder.buildDeadline(uint40(deadline))),
             p.build(_fixedPriceSwap, FixedPriceSwapArgsBuilder.build(address(token), SDAI, price)),
             p.build(_salt, ControlsArgsBuilder.buildSalt(salt))

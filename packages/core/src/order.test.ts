@@ -19,6 +19,8 @@ import {
 const params: OrderParams = {
 	conditionalTokens: fixture.inputs.conditionalTokens as Address,
 	conditionId: fixture.inputs.conditionId as Hex,
+	realitio: fixture.inputs.realitio as Address,
+	questionId: fixture.inputs.questionId as Hex,
 	deadline: fixture.inputs.deadline,
 	tokenIn: fixture.inputs.tokenIn as Address,
 	tokenOut: fixture.inputs.tokenOut as Address,
@@ -54,6 +56,7 @@ describe('parseOrder', () => {
 		expect(parseOrder(decodeStrategy(encodeStrategy(order)))).toEqual({
 			...params,
 			conditionalTokens: params.conditionalTokens.toLowerCase(),
+			realitio: params.realitio.toLowerCase(),
 			tokenIn: params.tokenIn.toLowerCase(),
 			tokenOut: params.tokenOut.toLowerCase(),
 		})

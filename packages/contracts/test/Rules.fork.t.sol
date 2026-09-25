@@ -9,7 +9,8 @@ import { MockTaker } from "@1inch/swap-vm/test/mocks/MockTaker.sol";
 import { Aqua } from "@1inch/aqua/src/Aqua.sol";
 import { FixedPriceSwap } from "../src/instructions/FixedPriceSwap.sol";
 import { OnlyUnresolvedCondition } from "../src/instructions/OnlyUnresolvedCondition.sol";
-import { IConditionalTokens, ISeerMarket } from "../src/interfaces/ISeer.sol";
+import { OnlyUnansweredQuestion } from "../src/instructions/OnlyUnansweredQuestion.sol";
+import { IConditionalTokens, IRealityETH, ISeerMarket } from "../src/interfaces/ISeer.sol";
 import { ForkBase } from "./ForkBase.sol";
 
 /// A taker that takes the maker's sUSDS and pushes nothing back.
@@ -105,6 +106,19 @@ contract RulesForkTest is ForkBase {
             abi.encode(uint256(1))
         );
         vm.expectRevert(abi.encodeWithSelector(OnlyUnresolvedCondition.ConditionAlreadyResolved.selector, conditionId));
+        _swap(address(yes), address(COLLATERAL), 10e18);
+    }
+
+    /// Seer markets open to answers long before their event: what stops a stale
+    /// order is the first answer on Reality.eth, not the opening time.
+    function test_rule_nothingOnceAnswered() public {
+        bytes32 questionId = ISeerMarket(MARKET).questionsIds()[0];
+        vm.mockCall(
+            REALITY,
+            abi.encodeWithSelector(IRealityETH.getFinalizeTS.selector, questionId),
+            abi.encode(uint32(block.timestamp + 302_400))
+        );
+        vm.expectRevert(abi.encodeWithSelector(OnlyUnansweredQuestion.QuestionAlreadyAnswered.selector, questionId));
         _swap(address(yes), address(COLLATERAL), 10e18);
     }
 

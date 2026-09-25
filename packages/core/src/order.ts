@@ -17,12 +17,13 @@ import {
 	toHex,
 } from 'viem'
 
-/** Opcode indices in OddsFlowRouter: the official Aqua table plus two appended. */
+/** Opcode indices in OddsFlowRouter: the official Aqua table plus three appended. */
 export const OPCODES = {
 	deadline: 13,
 	salt: 20,
 	fixedPriceSwap: 34,
 	onlyUnresolvedCondition: 35,
+	onlyUnansweredQuestion: 36,
 } as const
 
 /** MakerTraits with only `useAquaInsteadOfSignature` set: no hooks, maker receives. */
@@ -34,6 +35,9 @@ export const PRICE_SCALE = 10n ** 18n
 export type OrderParams = {
 	conditionalTokens: Address
 	conditionId: Hex
+	/** Reality.eth; the order stops filling once its question gets any answer. */
+	realitio: Address
+	questionId: Hex
 	/** Unix seconds; the order rejects fills after it. */
 	deadline: number
 	/** The outcome token the maker buys. */
@@ -73,6 +77,7 @@ export function buildProgram(p: OrderParams): Hex {
 	}
 	const program = concat([
 		instruction(OPCODES.onlyUnresolvedCondition, concat([p.conditionalTokens, p.conditionId])),
+		instruction(OPCODES.onlyUnansweredQuestion, concat([p.realitio, p.questionId])),
 		instruction(OPCODES.deadline, numberToHex(p.deadline, { size: 5 })),
 		instruction(OPCODES.fixedPriceSwap, concat([p.tokenIn, p.tokenOut, pad(toHex(p.price), { size: 32 })])),
 		instruction(OPCODES.salt, numberToHex(p.salt, { size: 8 })),
@@ -112,6 +117,7 @@ export function parseOrder(order: Order): OrderParams | null {
 	const program = order.data
 	const expected = [
 		[OPCODES.onlyUnresolvedCondition, 52],
+		[OPCODES.onlyUnansweredQuestion, 52],
 		[OPCODES.deadline, 5],
 		[OPCODES.fixedPriceSwap, 72],
 		[OPCODES.salt, 8],
@@ -131,7 +137,7 @@ export function parseOrder(order: Order): OrderParams | null {
 	if (pc !== size(program)) {
 		return null
 	}
-	const [condition, deadline, swap, salt] = args as [Hex, Hex, Hex, Hex]
+	const [condition, question, deadline, swap, salt] = args as [Hex, Hex, Hex, Hex, Hex]
 	const price = BigInt(slice(swap, 40, 72))
 	if (price === 0n) {
 		return null
@@ -139,6 +145,8 @@ export function parseOrder(order: Order): OrderParams | null {
 	return {
 		conditionalTokens: slice(condition, 0, 20),
 		conditionId: slice(condition, 20, 52),
+		realitio: slice(question, 0, 20),
+		questionId: slice(question, 20, 52),
 		deadline: Number(deadline),
 		tokenIn: slice(swap, 0, 20),
 		tokenOut: slice(swap, 20, 40),

@@ -26,6 +26,23 @@ Versioning cadence, while pre-1.0:
 
 ### Changed
 
+- Orders no longer expire when a Seer question opens to answers: that date is
+  usually long before the event, so the rule excluded every tradable market.
+  The maker picks the expiry (1–365 days, 7 by default) and the new
+  `OnlyUnansweredQuestion` opcode stops fills at the first answer on
+  Reality.eth. Router
+  [`0xfA92…7deC`](https://gnosisscan.io/tx/0xfc51637ca8814482552cb9d2c009e8fd80ceae41a9bfe592ec241094bfad506f)
+  and taker
+  [`0xbB9A…a678`](https://gnosisscan.io/tx/0xb7c3370d9deb4a61bd2f7dbe618298a0e8c189521082fd9c321bb637b2ed0e1a)
+  redeployed on Gnosis, ownership renounced in tx
+  [`0xa6af…0029`](https://gnosisscan.io/tx/0xa6af6d64e9c9d5a9098b80f7e0d865856dd3b4251d718381d46e2de76d390029).
+  Evidence: `test_rule_nothingOnceAnswered` on a Gnosis fork.
+- The market list comes from Seer's public API, the one app.seer.pm uses:
+  208 plain YES/NO markets on sDAI, with Seer's odds, liquidity and images,
+  search and pagination, read by the server every five minutes. Paged by
+  creation date and deduplicated, because paging over tied liquidity
+  repeated some markets and skipped others.
+
 - OddsFlow moved from Base to Gnosis Chain, where Seer's markets are live:
   on Base no Seer market besides our own was still tradable (146 of 146
   binary markets had opened to answers, 142 of them over 90 days ago), while

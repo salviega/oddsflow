@@ -1,8 +1,9 @@
-// Seer markets as OddsFlow shows them: binary, still open to trading.
-// Everything is read from chain (spec 05 §4); nothing is cached server-side
-// beyond Next's revalidation.
+// One market read straight from chain: the market page works even when Seer's
+// API does not, and it shows markets that left the list (answered, resolved).
+// The list of open markets comes from Seer's API (seer-api.ts).
 
 import {
+	COLLATERAL,
 	CONDITIONAL_TOKENS,
 	conditionalTokensAbi,
 	REALITY_ETH,
@@ -11,24 +12,13 @@ import {
 	seerMarketAbi,
 } from '@oddsflow/core'
 import { type Address, getAddress, type Hex, isAddress } from 'viem'
-import { featuredMarkets, publicClient } from './chain'
+import { publicClient } from './chain'
+import type { Market } from './seer-api'
 
-export type Market = {
-	address: Address
-	name: string
-	conditionId: Hex
-	/** When Reality.eth starts accepting answers; every order must expire by then. */
-	openingTs: number
-	resolved: boolean
-	yes: Address
-	no: Address
-	invalid: Address
-}
+export type { Market } from './seer-api'
 
-// Only plain YES/NO markets on sDAI: categorical questions (Reality template
-// 2) with no parent market and exactly the outcomes Yes and No. Scalar markets
-// also have two outcomes (DOWN/UP), and conditional ones use another market's
-// outcome token as collateral; neither fits OddsFlow's orders.
+const ZERO = '0x0000000000000000000000000000000000000000'
+
 const shapeAbi = [
 	{ type: 'function', name: 'templateId', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] },
 	{ type: 'function', name: 'parentMarket', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
@@ -41,127 +31,90 @@ const shapeAbi = [
 	},
 ] as const
 
-async function plainYesNo(addresses: readonly Address[]): Promise<Address[]> {
-	const r = await publicClient.multicall({
-		allowFailure: true,
-		contracts: addresses.flatMap((address) => [
-			{ address, abi: shapeAbi, functionName: 'templateId' } as const,
-			{ address, abi: shapeAbi, functionName: 'parentMarket' } as const,
-			{ address, abi: shapeAbi, functionName: 'outcomes', args: [0n] } as const,
-			{ address, abi: shapeAbi, functionName: 'outcomes', args: [1n] } as const,
-		]),
-	})
-	return addresses.filter((_, i) => {
-		const [template, parent, yes, no] = r.slice(i * 4, i * 4 + 4).map((x) => x?.result)
-		return (
-			template === 2n &&
-			typeof parent === 'string' &&
-			/^0x0{40}$/i.test(parent) &&
-			String(yes).toLowerCase() === 'yes' &&
-			String(no).toLowerCase() === 'no'
-		)
-	})
-}
-
-const factoryAbi = [
-	{ type: 'function', name: 'allMarkets', stateMutability: 'view', inputs: [], outputs: [{ type: 'address[]' }] },
+const finalizeAbi = [
+	{
+		type: 'function',
+		name: 'getFinalizeTS',
+		stateMutability: 'view',
+		inputs: [{ name: 'questionId', type: 'bytes32' }],
+		outputs: [{ type: 'uint32' }],
+	},
 ] as const
 
-async function readMarkets(addresses: readonly Address[]): Promise<Market[]> {
-	const calls = addresses.flatMap((address) => [
-		{ address, abi: seerMarketAbi, functionName: 'marketName' } as const,
-		{ address, abi: seerMarketAbi, functionName: 'conditionId' } as const,
-		{ address, abi: seerMarketAbi, functionName: 'questionsIds' } as const,
-		{ address, abi: seerMarketAbi, functionName: 'wrappedOutcome', args: [0n] } as const,
-		{ address, abi: seerMarketAbi, functionName: 'wrappedOutcome', args: [1n] } as const,
-		{ address, abi: seerMarketAbi, functionName: 'wrappedOutcome', args: [2n] } as const,
-	])
-	const r = await publicClient.multicall({ contracts: calls, allowFailure: false })
-	const partial = addresses.map((address, i) => {
-		const o = i * 6
-		return {
-			address,
-			name: r[o] as string,
-			conditionId: r[o + 1] as Hex,
-			questionId: (r[o + 2] as readonly Hex[])[0] as Hex,
-			yes: (r[o + 3] as readonly [Address, Hex])[0],
-			no: (r[o + 4] as readonly [Address, Hex])[0],
-			invalid: (r[o + 5] as readonly [Address, Hex])[0],
-		}
-	})
-	const r2 = await publicClient.multicall({
-		allowFailure: false,
-		contracts: partial.flatMap((m) => [
-			{ address: REALITY_ETH, abi: realityAbi, functionName: 'getOpeningTS', args: [m.questionId] } as const,
-			{
-				address: CONDITIONAL_TOKENS,
-				abi: conditionalTokensAbi,
-				functionName: 'payoutDenominator',
-				args: [m.conditionId],
-			} as const,
-		]),
-	})
-	return partial.map(({ questionId: _, ...m }, i) => ({
-		...m,
-		openingTs: Number(r2[i * 2]),
-		resolved: (r2[i * 2 + 1] as bigint) > 0n,
-	}))
+const collateralAbi = [
+	{ type: 'function', name: 'collateralToken', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
+] as const
+
+export type MarketDetail = Market & {
+	/** Reality.eth has an answer: OddsFlow orders on this market no longer fill. */
+	answered: boolean
 }
 
-/** One market by address, or null if it is not a binary Seer market. */
-export async function getMarket(address: string): Promise<Market | null> {
+/** A plain YES/NO market on sDAI, or null for any other kind of address. */
+export async function getMarket(address: string): Promise<MarketDetail | null> {
 	if (!isAddress(address)) {
 		return null
 	}
+	const market = getAddress(address)
 	try {
-		const outcomes = await publicClient.readContract({
-			address: getAddress(address),
-			abi: seerMarketAbi,
-			functionName: 'numOutcomes',
+		const r = await publicClient.multicall({
+			allowFailure: false,
+			contracts: [
+				{ address: market, abi: seerMarketAbi, functionName: 'numOutcomes' },
+				{ address: market, abi: shapeAbi, functionName: 'templateId' },
+				{ address: market, abi: shapeAbi, functionName: 'parentMarket' },
+				{ address: market, abi: shapeAbi, functionName: 'outcomes', args: [0n] },
+				{ address: market, abi: shapeAbi, functionName: 'outcomes', args: [1n] },
+				{ address: market, abi: seerMarketAbi, functionName: 'marketName' },
+				{ address: market, abi: seerMarketAbi, functionName: 'conditionId' },
+				{ address: market, abi: seerMarketAbi, functionName: 'questionsIds' },
+				{ address: market, abi: seerMarketAbi, functionName: 'wrappedOutcome', args: [0n] },
+				{ address: market, abi: seerMarketAbi, functionName: 'wrappedOutcome', args: [1n] },
+				{ address: market, abi: seerMarketAbi, functionName: 'wrappedOutcome', args: [2n] },
+			],
 		})
-		if (outcomes !== 2n || (await plainYesNo([getAddress(address)])).length === 0) {
+		const [count, template, parent, first, second, name, conditionId, questions, yes, no, invalid] = r
+		const plain =
+			count === 2n &&
+			template === 2n &&
+			(parent as string).toLowerCase() === ZERO &&
+			String(first).toLowerCase() === 'yes' &&
+			String(second).toLowerCase() === 'no'
+		if (!plain) {
 			return null
 		}
-		const [market] = await readMarkets([getAddress(address)])
-		return market ?? null
+		const questionId = (questions as readonly Hex[])[0] as Hex
+		const [openingTs, finalizeTs, denominator, collateral] = await publicClient.multicall({
+			allowFailure: false,
+			contracts: [
+				{ address: REALITY_ETH, abi: realityAbi, functionName: 'getOpeningTS', args: [questionId] },
+				{ address: REALITY_ETH, abi: finalizeAbi, functionName: 'getFinalizeTS', args: [questionId] },
+				{
+					address: CONDITIONAL_TOKENS,
+					abi: conditionalTokensAbi,
+					functionName: 'payoutDenominator',
+					args: [conditionId as Hex],
+				},
+				// Every market from Seer's Gnosis MarketFactory uses its collateral.
+				{ address: SEER_MARKET_FACTORY, abi: collateralAbi, functionName: 'collateralToken' },
+			],
+		})
+		if ((collateral as string).toLowerCase() !== COLLATERAL.toLowerCase()) {
+			return null
+		}
+		return {
+			address: market,
+			name: name as string,
+			conditionId: conditionId as Hex,
+			questionId,
+			openingTs: Number(openingTs),
+			resolved: (denominator as bigint) > 0n,
+			answered: Number(finalizeTs) !== 0,
+			yes: (yes as readonly [Address, Hex])[0],
+			no: (no as readonly [Address, Hex])[0],
+			invalid: (invalid as readonly [Address, Hex])[0],
+		}
 	} catch {
 		return null
 	}
-}
-
-/**
- * Plain YES/NO Seer markets still open to trading, featured ones first, then
- * by closing time. Filters as early as possible: outcome count, then shape,
- * then opening time; only the markets left get their full details read.
- */
-export async function getOpenMarkets(): Promise<Market[]> {
-	const all = await publicClient.readContract({
-		address: SEER_MARKET_FACTORY,
-		abi: factoryAbi,
-		functionName: 'allMarkets',
-	})
-	const counts = await publicClient.multicall({
-		allowFailure: true,
-		contracts: all.map((address) => ({ address, abi: seerMarketAbi, functionName: 'numOutcomes' }) as const),
-	})
-	const binary = await plainYesNo(all.filter((_, i) => counts[i]?.status === 'success' && counts[i]?.result === 2n))
-	const questions = await publicClient.multicall({
-		allowFailure: false,
-		contracts: binary.map((address) => ({ address, abi: seerMarketAbi, functionName: 'questionsIds' }) as const),
-	})
-	const openings = await publicClient.multicall({
-		allowFailure: false,
-		contracts: questions.map(
-			(ids) =>
-				({ address: REALITY_ETH, abi: realityAbi, functionName: 'getOpeningTS', args: [ids[0] as Hex] }) as const,
-		),
-	})
-	const now = Math.floor(Date.now() / 1000)
-	const open = binary.filter((_, i) => Number(openings[i]) > now)
-	const markets = open.length === 0 ? [] : (await readMarkets(open)).filter((m) => !m.resolved)
-	const rank = (m: Market) => {
-		const i = featuredMarkets.findIndex((f) => f.toLowerCase() === m.address.toLowerCase())
-		return i === -1 ? featuredMarkets.length : i
-	}
-	return markets.sort((a, b) => rank(a) - rank(b) || a.openingTs - b.openingTs)
 }

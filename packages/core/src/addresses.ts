@@ -44,11 +44,12 @@ export type Deployment = {
  * fromBlock depends on the fork and comes from the web's environment.
  */
 export const DEPLOYMENTS: Partial<Record<number, Deployment>> = {
-	// Deployed 2026-09-26, verified on Gnosisscan; router ownership renounced.
+	// Deployed 2026-09-26 with the OnlyUnansweredQuestion opcode, verified on
+	// Gnosisscan; router ownership renounced. Supersedes 0xB874…7140 / 0xdD02…04Cd.
 	[CHAIN_ID]: {
-		router: '0xB8747B3e2F90154420165FB2fc4707D638797140',
-		taker: '0xdD026eA05C9256A1162dC3d41102579458A804Cd',
-		fromBlock: 48438501n,
+		router: '0xfA92A297eC2cCC8Ec010ACa475F07240e2D47deC',
+		taker: '0xbB9Aa4e736B49E490C774dd674da88A38e89a678',
+		fromBlock: 48438751n,
 	},
 	[FORK_CHAIN_ID]: {
 		router: '0xD68862941Cb82d36940161913Afb08A6854EE76C',
