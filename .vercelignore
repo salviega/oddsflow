@@ -1,0 +1,11 @@
+# Never upload local environment files: apps/web/.env.local points the web at
+# a local fork (NEXT_PUBLIC_FORK=1). Vercel's own env settings are the source.
+**/.env
+**/.env.*
+!**/.env.example
+
+# The web does not build from the contracts, and their submodules are large.
+packages/contracts
+.claude
+spec
+brand

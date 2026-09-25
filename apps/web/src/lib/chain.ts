@@ -17,7 +17,14 @@ export const baseFork = defineChain({
 
 export const chain = isFork ? baseFork : base
 
-export const rpcUrl = isFork ? 'http://127.0.0.1:8545' : process.env.NEXT_PUBLIC_BASE_RPC_URL
+// The server reads through BASE_RPC_URL, a key that never reaches the
+// browser; the browser uses NEXT_PUBLIC_BASE_RPC_URL (or Base's public RPC).
+const onServer = typeof window === 'undefined'
+export const rpcUrl = isFork
+	? 'http://127.0.0.1:8545'
+	: onServer
+		? (process.env.BASE_RPC_URL ?? process.env.NEXT_PUBLIC_BASE_RPC_URL)
+		: process.env.NEXT_PUBLIC_BASE_RPC_URL
 
 export const publicClient = createPublicClient({ chain, transport: http(rpcUrl, { batch: true, timeout: 60_000 }) })
 
