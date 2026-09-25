@@ -42,9 +42,21 @@ Stack en uso: contratos oficiales en Base mainnet — Aqua `0x1111113ccf1426a8e3
 - `1inch/sdks/typescript/swap-vm/README.md`, sección "Instruction coverage vs. deployment".
 - `1inch/swap-vm/README.md`, tabla "Routers" (líneas 75-79 en `main`).
 
-**Impacto en el proyecto:** cambió el diseño de la orden. El precio fijo pasa por `Extruction` hacia un contrato propio, con `Deadline` para el vencimiento y el saldo virtual de Aqua como tope. Ver [03 §1](../definicion/03_bounties.md#1-1inch--build-an-aqua-app) y [04 §8](../definicion/04_diseno-de-solucion.md#8-decisiones-tomadas-y-pendientes). Queda como compuerta del día 1 comprobarlo en un fork.
+**Impacto en el proyecto:** cambió el diseño de la orden: hace falta un opcode propio de precio fijo (ver la entrada siguiente). Ver [03 §1](../definicion/03_bounties.md#1-1inch--build-an-aqua-app) y [04 §8](../definicion/04_diseno-de-solucion.md#8-decisiones-tomadas-y-pendientes).
 
 **Reportado:** pendiente. Sugerencia: en la sección "Deployment" del README de SwapVM, decir que la dirección oficial es un `AquaSwapVMRouter` y enlazar la lista de `aquaInstructions`; en la tabla de routers, incluir `Extruction` en el alcance del de Aqua.
+
+### 2026-09-26 — `LimitSwap` no daría precio fijo sobre Aqua aunque el router lo despachara
+
+**Documentado / prometido:** el README de SwapVM presenta `LimitSwap` como la instrucción de órdenes límite, y el de Aqua presenta Aqua como la capa de liquidez sobre la que corren las estrategias de SwapVM. Nada indica que las dos no se combinen.
+
+**Encontrado:** `LimitSwap` no guarda un precio: lo deduce de los registros de saldo, `amountOut = amountIn × balanceOut / balanceIn`, y exige `balanceIn > 0 && balanceOut > 0`. En una estrategia de Aqua esos registros son los saldos virtuales vivos. Una orden de compra recién publicada (1.000 sUSDS, 0 del token que quiere) revierte con `LimitSwapRequiresBothBalancesNonZero`, y si arrancara, cada llenado sumaría de un lado y restaría del otro, moviendo el precio: una curva, no una orden límite. `LimitSwap` está pensado para `StaticBalances` en órdenes firmadas. Así que la ausencia de `LimitSwap` en `AquaOpcodes` no es un olvido que se arregle despachándolo: **Aqua no tiene hoy ninguna forma de expresar una orden a precio fijo.**
+
+**Evidencia:** `src/instructions/LimitSwap.sol` en `v1.0.2`, función `_limitSwap1D`; `src/Aqua.sol`, `push` y `pull` (los saldos que ven los registros cambian en cada llenado).
+
+**Impacto en el proyecto:** OddsFlow define un opcode nuevo, `FixedPriceSwap`, con el precio como argumento de la instrucción y redondeo a favor del maker, en un `AquaSwapVMRouter` redesplegado sobre el Aqua oficial. Ver [03 §1](../definicion/03_bounties.md#1-1inch--build-an-aqua-app).
+
+**Reportado:** pendiente. Plan: PR a `1inch/swap-vm` proponiendo `FixedPriceSwap` para `AquaOpcodes`, con sus tests, cuando la fase de contratos del [07](../definicion/07_plan-de-trabajo.md) lo tenga verificado.
 
 ### 2026-09-26 — El código de `main` no es lo que está desplegado
 
@@ -68,7 +80,8 @@ Stack en uso: contratos oficiales en Base mainnet — Aqua `0x1111113ccf1426a8e3
 
 ## Preguntas abiertas para los mentores
 
-- [ ] ¿Una estrategia sobre el router oficial cuyo precio lo fija un contrato propio llamado por `Extruction` cuenta como "usar SwapVM" y como instrucción propia para el criterio de puntuación, o esperan un SwapVM redesplegado con opcodes nuevos?
+- [ ] ¿Puntúa más un opcode nuevo (`FixedPriceSwap`) en un `AquaSwapVMRouter` redesplegado sobre el Aqua oficial, que la misma lógica vía `Extruction` en el router oficial?
+- [ ] ¿Les interesa `FixedPriceSwap` como PR para `AquaOpcodes`?
 - [ ] ¿Operar sobre mercados de Seer cumple con "posición DeFi sofisticada", o esperan que la lógica del mercado viva en la app? (Pendiente del [03](../definicion/03_bounties.md#pendientes).)
 - [ ] ¿Qué incluyen los otros $2.000 del premio total de 1inch ($7.000), además de este track?
 
@@ -80,7 +93,8 @@ Stack en uso: contratos oficiales en Base mainnet — Aqua `0x1111113ccf1426a8e3
 | - | ---- | --------------- | ----------- | --------- | --------- |
 | 1 | Despliegues | Lista de redes oficiales | Ninguna es testnet, sin decirlo | Media: decidió la red | Pendiente |
 | 2 | Router | Tres routers y una dirección | La dirección es el de Aqua, sin `LimitSwap`; solo el SDK lo aclara | Alta: cambió el diseño de la orden | Pendiente |
-| 3 | Versionado | `main` ≠ ABI desplegado | Cambia también el layout (`contracts/` vs `src/`) | Nota | Pendiente |
+| 3 | Instrucciones | `LimitSwap` para órdenes límite | Deduce el precio de los saldos: sobre Aqua revierte o se mueve; no hay precio fijo posible | Alta: obligó a un opcode propio | PR pendiente |
+| 4 | Versionado | `main` ≠ ABI desplegado | Cambia también el layout (`contracts/` vs `src/`) | Nota | Pendiente |
 
 ## Reportes abiertos (se llena en la fase de demo)
 

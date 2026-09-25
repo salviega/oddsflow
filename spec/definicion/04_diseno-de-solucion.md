@@ -25,7 +25,8 @@
 | **Vendedor** (taker) | Wallet en Base con tokens de resultado de Seer | Vende a una orden los tokens que ya tiene, al precio de la orden |
 | **Seer** _(externo)_ | Contratos en Base | Tiene los mercados, crea los tokens de resultado a partir del colateral (`splitPosition`) y los canjea tras la resolución (`redeemPositions`) |
 | **Reality.eth** _(externo, vía Seer)_ | Oráculo | Resuelve la pregunta de cada mercado. OddsFlow no interviene en la resolución |
-| **Aqua / SwapVM** _(externo)_ | Contratos oficiales de 1inch en Base | Aqua guarda el saldo virtual de cada orden y mueve los tokens; el router de SwapVM ejecuta el programa de la orden, que delega el precio a un contrato de OddsFlow ([03](./03_bounties.md#1-1inch--build-an-aqua-app)) |
+| **Aqua** _(externo)_ | Contrato oficial de 1inch en Base | Guarda el saldo virtual de cada orden y mueve los tokens |
+| **Router de SwapVM de OddsFlow** | `AquaSwapVMRouter` redesplegado con dos opcodes propios | Ejecuta el programa de cada orden: precio fijo, vencimiento y mercado sin resolver ([03](./03_bounties.md#1-1inch--build-an-aqua-app)). No guarda fondos ni tiene dueño que pueda cambiar las reglas |
 
 No hay un actor "operador" ni "administrador". Ver el principio 6.
 
@@ -175,7 +176,7 @@ La aprobación de sUSDS a Aqua no es una pantalla: aparece como primer paso dent
 7. **Inválido en proporción al aporte, cuando hay creación.** Si los tokens se crean en el llenado, los inválidos se reparten según lo que puso cada uno, y si el mercado se anula cada uno recupera exactamente lo suyo. En una venta, el apostador recibe solo su lado, igual que si comprara en cualquier otro lugar.
 8. **Solo mercados binarios de Seer en Base, con colateral sUSDS.** Cualquier otro mercado se rechaza al publicar.
 
-**La regla que no puede fallar** (va con nombre propio al §5 del [05](./05_stack-y-arquitectura.md)): **el sUSDS del apostador nunca sale de su wallet sin que, en la misma transacción, reciba sus tokens de resultado al precio que firmó.** Las reglas 1, 2, 5 y 6 son las cuatro caras de esa misma promesa, y todas viven en el contrato que `Extruction` llama (ver [03](./03_bounties.md#1-1inch--build-an-aqua-app)).
+**La regla que no puede fallar** (va con nombre propio al §5 del [05](./05_stack-y-arquitectura.md)): **el sUSDS del apostador nunca sale de su wallet sin que, en la misma transacción, reciba sus tokens de resultado al precio que firmó.** Las reglas 1, 2, 5 y 6 son las cuatro caras de esa misma promesa. Dónde vive cada una: 1 y 2 en el opcode `FixedPriceSwap`; 3 en el saldo virtual de Aqua; 4 en `Deadline` y `OnlyUnresolvedCondition`; 5 en que todo ocurre en una sola transacción; 6 en los tokens con que se publica la estrategia (ver [03](./03_bounties.md#1-1inch--build-an-aqua-app)).
 
 **Riesgo que el sistema no cubre:** una orden es un precio fijo que no se entera de las noticias. Si el resultado se vuelve evidente antes de que el mercado abra a respuestas, alguien puede llenar una orden con precio viejo. La defensa es del apostador: cancelar o poner un vencimiento más corto. La interfaz lo dice al publicar.
 
@@ -199,9 +200,9 @@ La aprobación de sUSDS a Aqua no es una pantalla: aparece como primer paso dent
 
 - Base mainnet, colateral sUSDS ([03](./03_bounties.md)).
 - Una orden = una estrategia de Aqua, con el saldo compartido entre todas.
-- Precio fijo por `Extruction` hacia un contrato propio, porque el router oficial no tiene `LimitSwap` ([03](./03_bounties.md#1-1inch--build-an-aqua-app)).
+- Precio fijo con un opcode propio, `FixedPriceSwap`, en un router de SwapVM redesplegado sobre el Aqua oficial: el router oficial no tiene precio fijo y `LimitSwap` no sirve sobre saldos de Aqua ([03](./03_bounties.md#1-1inch--build-an-aqua-app)).
 - Publicar es una transacción `ship` por orden, agrupadas en una sola confirmación cuando la wallet lo admite.
-- Vencimiento por `Deadline`, por defecto en la apertura de respuestas del mercado, más el rechazo si el mercado ya está resuelto.
+- Vencimiento por `Deadline`, por defecto en la apertura de respuestas del mercado, más el opcode `OnlyUnresolvedCondition`, que rechaza si el mercado ya está resuelto.
 - Una orden se puede llenar de dos formas: creación de tokens (contraparte con sUSDS) o venta (quien ya tiene tokens).
 - Una compra recorre varias órdenes, de la más barata a la más cara, con un mínimo que fija la contraparte.
 - Los tokens inválidos se reparten en proporción al aporte cuando hay creación.
@@ -211,4 +212,4 @@ La aprobación de sUSDS a Aqua no es una pantalla: aparece como primer paso dent
 **Pendientes:**
 
 - **Cuántas órdenes puede recorrer una compra** antes de que el gas deje de compensar. → [05](./05_stack-y-arquitectura.md).
-- **Compuerta del día 1** del [03](./03_bounties.md#pendientes): si `Extruction` no se comporta como se espera en el router oficial, el precio fijo pasa a un SwapVM redesplegado con `LimitSwap`. El diseño de producto no cambia; cambia a qué router apunta la orden.
+- **Compuerta del día 1** del [03](./03_bounties.md#pendientes): si el router redesplegado no se comporta como se espera, el precio fijo pasa a la misma lógica vía `Extruction` en el router oficial. El diseño de producto no cambia; cambia a qué router apunta la orden.

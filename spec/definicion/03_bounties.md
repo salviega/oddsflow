@@ -43,13 +43,20 @@ Los mercados no se construyen: se usan los de **Seer**, que no es sponsor del ha
 
 **Qué significa para OddsFlow.** Es el producto completo, no una integración añadida. La frase central del [02](./02_solucion.md) ("el mismo saldo respalda todas sus órdenes a la vez") es literalmente lo que hace Aqua: cada orden es una estrategia con su propio saldo virtual de sUSDS, y todas cuentan con el mismo saldo real.
 
-**Cómo se escribe una orden sobre los contratos oficiales.** El router oficial en Base (`0x111111338c…c0de`, dominio EIP-712 "1inch SwapVM v1.0", versión 1.0.2, verificado onchain) es el `AquaSwapVMRouter`, que solo ejecuta el subconjunto de instrucciones de Aqua: curvas AMM, `Deadline`, saltos, comisiones y `Extruction`. **No tiene `LimitSwap` ni invalidadores** ([SDK de SwapVM](https://github.com/1inch/sdks/tree/master/typescript/swap-vm), sección de `aquaInstructions`). Así que una orden a precio fijo no se puede escribir con las instrucciones de fábrica, y se resuelve con `Extruction`, que delega el cálculo del intercambio a un contrato elegido por el maker:
+**Por qué hace falta un opcode propio.** El router oficial en Base (`0x111111338c…c0de`, dominio EIP-712 "1inch SwapVM v1.0", versión 1.0.2, verificado onchain) es el `AquaSwapVMRouter`, que solo ejecuta el subconjunto de instrucciones de Aqua: curvas AMM, `Deadline`, saltos, comisiones y `Extruction` ([SDK de SwapVM](https://github.com/1inch/sdks/tree/master/typescript/swap-vm), sección de `aquaInstructions`). **No tiene ninguna instrucción de precio fijo.** Y agregarle `LimitSwap` tampoco serviría: `LimitSwap` no guarda un precio, lo calcula como `balanceOut / balanceIn` y exige los dos saldos mayores que cero. Sobre los saldos virtuales de Aqua, una orden recién publicada (1.000 sUSDS, 0 SÍ) revierte, y cada llenado movería el precio. `LimitSwap` está hecho para `StaticBalances` en órdenes firmadas, no para Aqua.
 
-- `Deadline` corta la orden en su vencimiento.
-- `Extruction` llama a un contrato propio de OddsFlow, sin dueño y sin actualización, que fija el precio de la orden, solo acepta la dirección token de resultado → sUSDS, y rechaza la ejecución si el mercado de Seer ya está resuelto.
+**Cómo se escribe una orden.** OddsFlow redespliega el `AquaSwapVMRouter` de `v1.0.2` con **dos opcodes nuevos** en su tabla, apuntando al **Aqua oficial**. Es lo que el track permite ("se permite redesplegar un SwapVM modificado") e invita ("modificar sus opcodes y definir instrucciones propias"):
+
+- **`FixedPriceSwap`:** el precio va en los argumentos de la instrucción, no se deduce de los saldos. `amountOut = amountIn × precio`, redondeando siempre a favor del maker, y solo en la dirección que declara (token de resultado → sUSDS). Es genérico: sirve para cualquier orden límite sobre Aqua, no solo para mercados de predicción.
+- **`OnlyUnresolvedCondition`:** rechaza la ejecución si la condición del mercado ya tiene resultado reportado en Conditional Tokens (el estándar que usa Seer).
+- **`Deadline`**, de fábrica, corta la orden en su vencimiento.
 - El tope lo hace cumplir Aqua: `pull` descuenta el saldo virtual de la estrategia y revierte si no alcanza.
 
-Es la instrucción propia que el track premia, puesta en el punto de extensión que SwapVM ofrece para eso, sin redesplegar el router: se usan los contratos oficiales tal cual. La demo muestra lo que pide el track: una compra llenando una o varias órdenes onchain con transferencias reales, y lo que las demás órdenes del mismo apostador pueden cubrir bajando en la misma transacción.
+El saldo compartido, `ship`, `dock`, `pull` y `push` siguen siendo del Aqua oficial, sin tocar. Lo único redesplegado es el router, que no guarda fondos.
+
+**Plan B y aporte aguas arriba.** La misma lógica de `FixedPriceSwap` se puede servir sin redesplegar, como contrato destino de `Extruction` en el router oficial: queda como alternativa si el router redesplegado da problemas. Y como el hallazgo es de 1inch, no nuestro, `FixedPriceSwap` se propone con sus tests como PR a [`1inch/swap-vm`](https://github.com/1inch/swap-vm) para `AquaOpcodes` (ver [feedback](../feedback/01_1inch.md)).
+
+La demo muestra lo que pide el track: una compra llenando una o varias órdenes onchain con transferencias reales, y lo que las demás órdenes del mismo apostador pueden cubrir bajando en la misma transacción.
 
 ---
 
@@ -72,5 +79,6 @@ Es la instrucción propia que el track premia, puesta en el punto de extensión 
 - Confirmar qué incluyen los otros $2.000 del premio total de 1inch ($7.000), además de este track.
 - ~~Decidir entre fork de Base y Base Sepolia.~~ Base mainnet: Aqua no tiene testnet y redesplegar Aqua + Seer en Sepolia sería más trabajo que el gas real. Ver el marco.
 - Confirmar con los mentores de 1inch si operar sobre mercados de Seer cumple con "posición DeFi sofisticada", o si esperan que la lógica del mercado también viva en la app.
-- ~~Instrucción propia de SwapVM: sí o no.~~ Sí, y obligada: el router oficial no tiene `LimitSwap`. Va por `Extruction` (ver sección 1).
-- **Compuerta del día 1:** comprobar en un fork de Base que una estrategia `Deadline` + `Extruction` se ejecuta en el router oficial con el precio que fija el contrato propio, tanto en `quote` como en `swap`. Si no, la salida permitida por el track es redesplegar un SwapVM con `LimitSwap` sobre el Aqua oficial.
+- ~~Instrucción propia de SwapVM: sí o no.~~ Sí, y obligada: el router oficial no tiene precio fijo y `LimitSwap` no sirve sobre Aqua. Dos opcodes nuevos, `FixedPriceSwap` y `OnlyUnresolvedCondition`, en un router redesplegado sobre el Aqua oficial (ver sección 1).
+- **Compuerta del día 1:** comprobar en un fork de Base que una estrategia `OnlyUnresolvedCondition` + `Deadline` + `FixedPriceSwap`, publicada con `ship` en el Aqua oficial para el router redesplegado, se llena al precio fijo tanto en `quote` como en `swap`. Si el router redesplegado falla, el plan B es la misma lógica vía `Extruction` en el router oficial.
+- Confirmar con los mentores si un opcode nuevo en un SwapVM redesplegado puntúa más que la misma lógica vía `Extruction` en el oficial.
