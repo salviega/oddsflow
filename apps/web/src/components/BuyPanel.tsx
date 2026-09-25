@@ -2,6 +2,7 @@
 
 import {
 	averagePrice,
+	COLLATERAL,
 	formatAmount,
 	formatPrice,
 	formatProbability,
@@ -9,7 +10,6 @@ import {
 	oddsFlowTakerAbi,
 	planBuy,
 	priceToNumber,
-	SUSDS,
 } from '@oddsflow/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
@@ -62,14 +62,14 @@ export function BuyPanel({ market, orders }: { market: Market; orders: readonly 
 	const bestPrice = counter.length > 0 ? 1 - Math.max(...counter.map((o) => priceToNumber(o.price))) : undefined
 
 	const { data: allowance } = useReadContract({
-		address: SUSDS,
+		address: COLLATERAL,
 		abi: erc20Abi,
 		functionName: 'allowance',
 		args: address && d ? [address, d.taker] : undefined,
 		query: { enabled: Boolean(address && d) },
 	})
 	const { data: balance } = useReadContract({
-		address: SUSDS,
+		address: COLLATERAL,
 		abi: erc20Abi,
 		functionName: 'balanceOf',
 		args: address ? [address] : undefined,
@@ -99,7 +99,7 @@ export function BuyPanel({ market, orders }: { market: Market; orders: readonly 
 		const calls: Call[] = []
 		if ((allowance ?? 0n) < plan.amount) {
 			calls.push({
-				to: SUSDS,
+				to: COLLATERAL,
 				data: encodeFunctionData({ abi: erc20Abi, functionName: 'approve', args: [d.taker, plan.amount] }),
 			})
 		}
@@ -197,7 +197,7 @@ export function BuyPanel({ market, orders }: { market: Market; orders: readonly 
 				moves={`${formatAmount(plan.amount)} from your wallet`}
 				happens={`You receive ${formatTokens(plan.tokens, side)} in this transaction, at this price or it does not go through.`}
 				doesNot="OddsFlow gets no permission beyond this purchase's exact amount."
-				undo="Irreversible once confirmed. The tokens pay 1 sUSDS each if the market resolves your way."
+				undo="Irreversible once confirmed. The tokens pay 1 sDAI each if the market resolves your way."
 				irreversible
 			/>
 

@@ -1,28 +1,32 @@
 import type { Address } from 'viem'
 
-// Base mainnet (chain id 8453). Source: spec/definicion/05_stack-y-arquitectura.md §11.
+// Gnosis Chain (chain id 100). Source: spec/definicion/05_stack-y-arquitectura.md §11.
 // Addresses are versioned here, not in environment variables: changing one is a commit.
+// OddsFlow moved from Base to Gnosis on 2026-09-26: Seer's live markets are here
+// (131 open binary markets against none on Base besides our own).
 
-export const BASE_CHAIN_ID = 8453
+export const CHAIN_ID = 100
 
-/** 1inch Aqua, official deployment. */
+/** 1inch Aqua, official deployment (same address on every chain). */
 export const AQUA: Address = '0x1111113ccf1426a8e30e2bff5e005d929bf6a90a'
 
-/** Savings USDS, the collateral of every OddsFlow market. */
-export const SUSDS: Address = '0x5875eEE11Cf8398102FdAd704C9E96607675467a'
+/** Savings DAI, the collateral of every Seer market on Gnosis. */
+export const COLLATERAL: Address = '0xaf204776c7245bF4147c2612BF6e5972Ee483701'
+export const COLLATERAL_SYMBOL = 'sDAI'
 
-export const SEER_MARKET_FACTORY: Address = '0x886Ef0A78faBbAE942F1dA1791A8ed02a5aF8BC6'
-export const SEER_ROUTER: Address = '0x3124e97ebF4c9592A17d40E54623953Ff3c77a73'
-export const SEER_MARKET_VIEW: Address = '0x179d8F8c811B8C759c33809dbc6c5ceDc62D05DD'
-export const SEER_REALITY_PROXY: Address = '0xfE8bF5140F00de6F75BAFa3Ca0f4ebf2084A46B2'
+export const SEER_MARKET_FACTORY: Address = '0x83183DA839Ce8228E31Ae41222EaD9EDBb5cDcf1'
+/** Seer's GnosisRouter: splitPosition, mergePositions and redeemPositions on sDAI. */
+export const SEER_ROUTER: Address = '0xeC9048b59b3467415b1a38F63416407eA0c70fB8'
+export const SEER_MARKET_VIEW: Address = '0x95493F3e3F151eD9ee9338a4Fc1f49c00890F59C'
+export const SEER_REALITY_PROXY: Address = '0xc260ADfAC11f97c001dC143d2a4F45b98e0f2D6C'
 
-export const CONDITIONAL_TOKENS: Address = '0xAb797C4C6022A401c31543E316D3cd04c67a87fC'
-export const REALITY_ETH: Address = '0x2F39f464d16402Ca3D8527dA89617b73DE2F60e8'
+export const CONDITIONAL_TOKENS: Address = '0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce'
+export const REALITY_ETH: Address = '0xE78996A233895bE74a66F451f1019cA9734205cc'
 
 /** The official 1inch SwapVM router. Reference only: OddsFlow deploys its own. */
 export const SWAPVM_ROUTER_OFFICIAL: Address = '0x111111338c5091e8440b67b168bae16a668ac0de'
 
-/** Chain id of the local Base fork from scripts/dev-fork.sh. */
+/** Chain id of the local Gnosis fork from scripts/dev-fork.sh. */
 export const FORK_CHAIN_ID = 31337
 
 export type Deployment = {
@@ -36,19 +40,19 @@ export type Deployment = {
 
 /**
  * OddsFlow's own contracts, per chain. The fork addresses are fixed because
- * scripts/dev-fork.sh resets the deployer's nonce before deploying; its
+ * scripts/dev-fork.sh deploys from its own dev key at nonce 0; its
  * fromBlock depends on the fork and comes from the web's environment.
  */
 export const DEPLOYMENTS: Partial<Record<number, Deployment>> = {
-	// Deployed 2026-09-26, verified on Basescan; router ownership renounced.
-	[BASE_CHAIN_ID]: {
+	// Deployed 2026-09-26, verified on Gnosisscan; router ownership renounced.
+	[CHAIN_ID]: {
 		router: '0xB8747B3e2F90154420165FB2fc4707D638797140',
 		taker: '0xdD026eA05C9256A1162dC3d41102579458A804Cd',
-		fromBlock: 51792181n,
+		fromBlock: 48438501n,
 	},
 	[FORK_CHAIN_ID]: {
-		router: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-		taker: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+		router: '0xD68862941Cb82d36940161913Afb08A6854EE76C',
+		taker: '0xd07e7e15E8939dDe345c1C396728721690c4AC53',
 		fromBlock: 0n,
 	},
 }

@@ -46,7 +46,7 @@ contract OddsFlowTakerForkTest is ForkBase {
     function _buyer(uint256 amount) internal {
         _fund(carol, amount);
         vm.prank(carol);
-        SUSDS.approve(address(taker), type(uint256).max);
+        COLLATERAL.approve(address(taker), type(uint256).max);
     }
 
     function _buy(
@@ -76,8 +76,8 @@ contract OddsFlowTakerForkTest is ForkBase {
         assertEq(spent, 80e18, "NO at 0.80 when YES is at 0.20");
         assertEq(no.balanceOf(carol), 100e18, "buyer gets NO");
         assertEq(yes.balanceOf(alice), 100e18, "maker gets YES");
-        assertEq(SUSDS.balanceOf(alice), 980e18, "maker paid 20");
-        assertEq(SUSDS.balanceOf(carol), 20e18, "buyer paid 80");
+        assertEq(COLLATERAL.balanceOf(alice), 980e18, "maker paid 20");
+        assertEq(COLLATERAL.balanceOf(carol), 20e18, "buyer paid 80");
         assertEq(invalid.balanceOf(alice), 20e18, "invalid by contribution: maker");
         assertEq(invalid.balanceOf(carol), 80e18, "invalid by contribution: buyer");
         _assertTakerEmpty();
@@ -113,7 +113,7 @@ contract OddsFlowTakerForkTest is ForkBase {
         (uint256 bought,) = _buy(_two(first, second), 1000e18, 0, type(uint256).max);
 
         assertEq(bought, 250e18, "50 sUSDS at 0.20 covers 250 tokens, once");
-        assertEq(SUSDS.balanceOf(alice), 0);
+        assertEq(COLLATERAL.balanceOf(alice), 0);
         _assertTakerEmpty();
     }
 
@@ -139,7 +139,7 @@ contract OddsFlowTakerForkTest is ForkBase {
         (uint256 bought,) = _buy(_one(order), 1000e18, 0, type(uint256).max);
 
         assertGt(bought, 0);
-        assertLe(SUSDS.balanceOf(alice), 10e18 + 7);
+        assertLe(COLLATERAL.balanceOf(alice), 10e18 + 7);
         assertLe(bought * 0.3e18 / 1e18, 10e18 + 7, "never more than the maker holds");
         _assertTakerEmpty();
     }
@@ -181,12 +181,12 @@ contract OddsFlowTakerForkTest is ForkBase {
         // carol approves but holds nothing: the fill reverts inside and is skipped
 
         vm.prank(carol);
-        SUSDS.approve(address(taker), type(uint256).max);
+        COLLATERAL.approve(address(taker), type(uint256).max);
         (uint256 bought, uint256 spent) = _buy(_one(order), 100e18, 0, type(uint256).max);
 
         assertEq(bought, 0);
         assertEq(spent, 0);
-        assertEq(SUSDS.balanceOf(alice), 1000e18, "maker untouched");
+        assertEq(COLLATERAL.balanceOf(alice), 1000e18, "maker untouched");
     }
 
     function test_buy_revertsUnderTheMinimum() public {
@@ -227,7 +227,7 @@ contract OddsFlowTakerForkTest is ForkBase {
 
         assertEq(sold, 100e18);
         assertEq(received, 20e18);
-        assertEq(SUSDS.balanceOf(carol), 20e18);
+        assertEq(COLLATERAL.balanceOf(carol), 20e18);
         assertEq(yes.balanceOf(alice), 100e18);
         assertEq(no.balanceOf(carol), 100e18, "seller keeps the other side");
         _assertTakerEmpty();
@@ -261,13 +261,13 @@ contract OddsFlowTakerForkTest is ForkBase {
 
     function test_callback_onlyFromTheRouter() public {
         vm.expectRevert(OddsFlowTaker.NotRouter.selector);
-        taker.preTransferInCallback(alice, address(0), address(yes), address(SUSDS), 1, 1, bytes32(0), "");
+        taker.preTransferInCallback(alice, address(0), address(yes), address(COLLATERAL), 1, 1, bytes32(0), "");
     }
 
     function test_callback_onlyDuringAnOperation() public {
         vm.prank(address(router));
         vm.expectRevert(OddsFlowTaker.NoOperationInProgress.selector);
-        taker.preTransferInCallback(alice, address(0), address(yes), address(SUSDS), 1, 1, bytes32(0), "");
+        taker.preTransferInCallback(alice, address(0), address(yes), address(COLLATERAL), 1, 1, bytes32(0), "");
     }
 
     function test_preTransferOutCallback_isANoOp() public view {
@@ -279,7 +279,7 @@ contract OddsFlowTakerForkTest is ForkBase {
         ISwapVM.Order memory order = _order(alice, yes, 0.2e18);
         _ship(order, yes, 1000e18);
         vm.prank(alice);
-        SUSDS.approve(address(AQUA), 10e18); // approval below balance and cap
+        COLLATERAL.approve(address(AQUA), 10e18); // approval below balance and cap
         _buyer(1000e18);
 
         (uint256 bought,) = _buy(_one(order), 1000e18, 0, type(uint256).max);

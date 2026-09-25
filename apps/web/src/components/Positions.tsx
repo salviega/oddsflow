@@ -1,12 +1,12 @@
 'use client'
 
 import {
+	COLLATERAL,
 	CONDITIONAL_TOKENS,
 	conditionalTokensAbi,
 	formatAmount,
 	formatTokens,
 	SEER_ROUTER,
-	SUSDS,
 	seerRouterAbi,
 } from '@oddsflow/core'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -111,7 +111,7 @@ export function Positions() {
 			data: encodeFunctionData({
 				abi: seerRouterAbi,
 				functionName: 'redeemPositions',
-				args: [SUSDS, h.market.address, indexes, amounts],
+				args: [COLLATERAL, h.market.address, indexes, amounts],
 			}),
 		})
 		setTx({ kind: 'pending', label: 'Confirm the claim in your wallet…' })
@@ -157,13 +157,13 @@ export function Positions() {
 										{h.amounts[0] > 0n && <span className="mr-4">{formatTokens(h.amounts[0], 'YES')}</span>}
 										{h.amounts[1] > 0n && <span className="mr-4">{formatTokens(h.amounts[1], 'NO')}</span>}
 										{h.amounts[2] > 0n && (
-											<span className="text-mist">{formatAmount(h.amounts[2]).replace('sUSDS', 'invalid result')}</span>
+											<span className="text-mist">{formatAmount(h.amounts[2]).replace('sDAI', 'invalid result')}</span>
 										)}
 									</p>
 									<p className="text-sm text-mist">
 										{h.payouts
 											? `Resolved. You can claim ${formatAmount(amount)}.`
-											: 'Not resolved yet. Each winning token pays 1 sUSDS; invalid-result tokens pay back your stake if the market is annulled.'}
+											: 'Not resolved yet. Each winning token pays 1 sDAI; invalid-result tokens pay back your stake if the market is annulled.'}
 									</p>
 								</div>
 								{h.payouts && amount > 0n && (

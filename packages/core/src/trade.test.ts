@@ -36,7 +36,7 @@ describe('planBuy mirrors OddsFlowTaker', () => {
 	})
 
 	it('skips a fill where the maker would pay nothing, as the router does', () => {
-		// 1 wei at any price under 1.00 pays 0 sUSDS: the router would revert.
+		// 1 wei at any price under 1.00 pays 0 sDAI: the router would revert.
 		const p = planBuy([q(1, 50n, e18), q(2, 20n, e18)], 1n)
 		expect(p.fills).toHaveLength(0)
 		expect(p.tokens).toBe(0n)

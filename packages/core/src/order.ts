@@ -38,9 +38,9 @@ export type OrderParams = {
 	deadline: number
 	/** The outcome token the maker buys. */
 	tokenIn: Address
-	/** The collateral the maker pays (sUSDS). */
+	/** The collateral the maker pays (sDAI). */
 	tokenOut: Address
-	/** sUSDS per outcome token, 1e18 scale. */
+	/** sDAI per outcome token, 1e18 scale. */
 	price: bigint
 	/** Makes two otherwise identical orders distinct. */
 	salt: bigint

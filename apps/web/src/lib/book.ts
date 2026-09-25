@@ -5,6 +5,7 @@
 import {
 	AQUA,
 	aquaAbi,
+	COLLATERAL,
 	coverableToday,
 	type Deployment,
 	decodeStrategy,
@@ -13,7 +14,6 @@ import {
 	type OrderStatus,
 	orderStatus,
 	parseOrder,
-	SUSDS,
 } from '@oddsflow/core'
 import { type Address, erc20Abi, type Hex, isAddressEqual, parseAbiItem } from 'viem'
 import { publicClient } from './chain'
@@ -29,15 +29,15 @@ export type BookOrder = {
 	market: Address
 	/** The side the maker buys. */
 	side: Side
-	/** sUSDS per token, 1e18 scale. */
+	/** sDAI per token, 1e18 scale. */
 	price: bigint
-	/** sUSDS the order started with. */
+	/** sDAI the order started with. */
 	cap: bigint
-	/** sUSDS already paid on fills. */
+	/** sDAI already paid on fills. */
 	filled: bigint
 	capLeft: bigint
 	status: OrderStatus
-	/** sUSDS the order can pay today (0 unless active). */
+	/** sDAI the order can pay today (0 unless active). */
 	available: bigint
 	/** What the maker can pay across all their orders: min(balance, approval to Aqua). */
 	makerFunds: bigint
@@ -74,7 +74,7 @@ export async function getBook(deployment: Deployment, markets: readonly Market[]
 		const order = decodeStrategy(strategy)
 		const params = parseOrder(order)
 		const where = params && byToken.get(params.tokenIn.toLowerCase())
-		if (!params || !where || !isAddressEqual(params.tokenOut, SUSDS) || !isAddressEqual(order.maker, maker)) {
+		if (!params || !where || !isAddressEqual(params.tokenOut, COLLATERAL) || !isAddressEqual(order.maker, maker)) {
 			return []
 		}
 		if (params.conditionId.toLowerCase() !== where.market.conditionId.toLowerCase()) {
@@ -89,7 +89,7 @@ export async function getBook(deployment: Deployment, markets: readonly Market[]
 	const dockedSet = new Set(dockLogs.filter((l) => ours(l.args.app)).map((l) => l.args.strategyHash))
 	const paid = new Map<string, bigint>()
 	for (const l of pullLogs) {
-		if (ours(l.args.app) && l.args.token && isAddressEqual(l.args.token, SUSDS) && l.args.strategyHash) {
+		if (ours(l.args.app) && l.args.token && isAddressEqual(l.args.token, COLLATERAL) && l.args.strategyHash) {
 			paid.set(l.args.strategyHash, (paid.get(l.args.strategyHash) ?? 0n) + (l.args.amount ?? 0n))
 		}
 	}
@@ -104,11 +104,13 @@ export async function getBook(deployment: Deployment, markets: readonly Market[]
 						address: AQUA,
 						abi: aquaAbi,
 						functionName: 'rawBalances',
-						args: [c.maker, deployment.router, c.strategyHash, SUSDS],
+						args: [c.maker, deployment.router, c.strategyHash, COLLATERAL],
 					}) as const,
 			),
-			...makers.map((m) => ({ address: SUSDS, abi: erc20Abi, functionName: 'balanceOf', args: [m] }) as const),
-			...makers.map((m) => ({ address: SUSDS, abi: erc20Abi, functionName: 'allowance', args: [m, AQUA] }) as const),
+			...makers.map((m) => ({ address: COLLATERAL, abi: erc20Abi, functionName: 'balanceOf', args: [m] }) as const),
+			...makers.map(
+				(m) => ({ address: COLLATERAL, abi: erc20Abi, functionName: 'allowance', args: [m, AQUA] }) as const,
+			),
 		],
 	})
 	const balance = new Map<string, bigint>()

@@ -47,7 +47,7 @@ jobs:
           version: v1.3.2
 
       - run: forge fmt --check
-      # Fork tests read the URL through vm.rpcUrl("base"), i.e. the environment.
+      # Fork tests read the URL through vm.rpcUrl("gnosis"), i.e. the environment.
       - run: forge test
         env:
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          GNOSIS_RPC_URL: ${{ secrets.GNOSIS_RPC_URL }}

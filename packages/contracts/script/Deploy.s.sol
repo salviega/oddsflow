@@ -9,7 +9,7 @@ import { OddsFlowRouter } from "../src/OddsFlowRouter.sol";
 import { OddsFlowTaker } from "../src/OddsFlowTaker.sol";
 import { ISeerRouter } from "../src/interfaces/ISeer.sol";
 
-/// Deploys OddsFlowRouter and OddsFlowTaker on Base and writes their addresses
+/// Deploys OddsFlowRouter and OddsFlowTaker on Gnosis and writes their addresses
 /// to deployments/<chainid>.json.
 ///
 /// The router is Ownable only for SwapVM's `rescueFunds`, which can move tokens
@@ -18,15 +18,15 @@ import { ISeerRouter } from "../src/interfaces/ISeer.sol";
 /// holds any power over the router after deployment.
 contract Deploy is Script {
     address constant AQUA = 0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a;
-    address constant WETH = 0x4200000000000000000000000000000000000006;
-    address constant SUSDS = 0x5875eEE11Cf8398102FdAd704C9E96607675467a;
-    address constant SEER_ROUTER = 0x3124e97ebF4c9592A17d40E54623953Ff3c77a73;
+    address constant WXDAI = 0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d;
+    address constant SDAI = 0xaf204776c7245bF4147c2612BF6e5972Ee483701;
+    address constant SEER_ROUTER = 0xeC9048b59b3467415b1a38F63416407eA0c70fB8;
 
     function run() external returns (OddsFlowRouter router, OddsFlowTaker taker) {
         vm.startBroadcast();
-        router = new OddsFlowRouter(AQUA, WETH, msg.sender, "OddsFlow SwapVM", "1.0.2");
+        router = new OddsFlowRouter(AQUA, WXDAI, msg.sender, "OddsFlow SwapVM", "1.0.2");
         router.renounceOwnership();
-        taker = new OddsFlowTaker(IAqua(AQUA), ISwapVM(address(router)), IERC20(SUSDS), ISeerRouter(SEER_ROUTER));
+        taker = new OddsFlowTaker(IAqua(AQUA), ISwapVM(address(router)), IERC20(SDAI), ISeerRouter(SEER_ROUTER));
         vm.stopBroadcast();
 
         require(router.owner() == address(0), "router ownership not renounced");

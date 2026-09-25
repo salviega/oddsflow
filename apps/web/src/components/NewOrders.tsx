@@ -4,12 +4,12 @@ import {
 	AQUA,
 	aquaAbi,
 	buildOrder,
+	COLLATERAL,
 	CONDITIONAL_TOKENS,
 	encodeStrategy,
 	formatAmount,
 	formatProbability,
 	priceFromCents,
-	SUSDS,
 } from '@oddsflow/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -64,14 +64,14 @@ export function NewOrders() {
 	const [tx, setTx] = useState<TxState>({ kind: 'idle' })
 
 	const { data: balance } = useReadContract({
-		address: SUSDS,
+		address: COLLATERAL,
 		abi: erc20Abi,
 		functionName: 'balanceOf',
 		args: address ? [address] : undefined,
 		query: { enabled: Boolean(address) },
 	})
 	const { data: allowance } = useReadContract({
-		address: SUSDS,
+		address: COLLATERAL,
 		abi: erc20Abi,
 		functionName: 'allowance',
 		args: address ? [address, AQUA] : undefined,
@@ -95,7 +95,7 @@ export function NewOrders() {
 			: chainId !== chain.id
 				? `Switch your wallet to ${chain.name}.`
 				: balance === 0n
-					? 'Your wallet has no sUSDS. Orders need sUSDS in the wallet to fill.'
+					? 'Your wallet has no sDAI. Orders need sDAI in the wallet to fill.'
 					: problems.find((p) => p !== undefined)
 
 	function update(id: number, patch: Partial<Row>) {
@@ -109,7 +109,7 @@ export function NewOrders() {
 		const calls: Call[] = []
 		if (needsApproval) {
 			calls.push({
-				to: SUSDS,
+				to: COLLATERAL,
 				data: encodeFunctionData({ abi: erc20Abi, functionName: 'approve', args: [AQUA, maxUint256] }),
 			})
 		}
@@ -121,7 +121,7 @@ export function NewOrders() {
 				conditionId: market.conditionId,
 				deadline: market.openingTs,
 				tokenIn,
-				tokenOut: SUSDS,
+				tokenOut: COLLATERAL,
 				price: priceFromCents(Number(r.cents)),
 				salt: randomSalt(),
 			})
@@ -130,7 +130,7 @@ export function NewOrders() {
 				data: encodeFunctionData({
 					abi: aquaAbi,
 					functionName: 'ship',
-					args: [d.router, encodeStrategy(order), [tokenIn, SUSDS], [0n, parseAmount(r.limit) as bigint]],
+					args: [d.router, encodeStrategy(order), [tokenIn, COLLATERAL], [0n, parseAmount(r.limit) as bigint]],
 				}),
 			})
 		}
@@ -141,7 +141,7 @@ export function NewOrders() {
 			setTx({
 				kind: 'done',
 				hashes,
-				message: `${n} order${n > 1 ? 's are' : ' is'} live. Your sUSDS stays in your wallet until one fills.`,
+				message: `${n} order${n > 1 ? 's are' : ' is'} live. Your sDAI stays in your wallet until one fills.`,
 			})
 			await queryClient.invalidateQueries()
 		} catch (e) {
@@ -233,7 +233,7 @@ export function NewOrders() {
 										</div>
 									</label>
 									<label className="block space-y-1">
-										<span className="text-sm text-mist">Spend up to (sUSDS)</span>
+										<span className="text-sm text-mist">Spend up to (sDAI)</span>
 										<input
 											className="field"
 											inputMode="decimal"
@@ -279,11 +279,11 @@ export function NewOrders() {
 			<SignSummary
 				moves={
 					needsApproval
-						? 'Nothing. You pay network fees, and allow OddsFlow orders to use your sUSDS once.'
+						? 'Nothing. You pay network fees, and allow OddsFlow orders to use your sDAI once.'
 						: 'Nothing. You pay network fees.'
 				}
 				happens={`${withDefaults.length} order${withDefaults.length > 1 ? 's wait' : ' waits'} at your price until filled, cancelled or expired.`}
-				doesNot="Your sUSDS does not leave your wallet. OddsFlow itself never gets permission over it; only the orders you sign can use it, and only when they fill."
+				doesNot="Your sDAI does not leave your wallet. OddsFlow itself never gets permission over it; only the orders you sign can use it, and only when they fill."
 				undo="Cancel any order at any time, from My orders. The approval can be revoked from your wallet."
 			/>
 

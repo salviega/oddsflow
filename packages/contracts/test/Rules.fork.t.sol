@@ -64,35 +64,37 @@ contract RulesForkTest is ForkBase {
 
     function test_rule_oppositeDirectionReverts() public {
         vm.expectRevert(
-            abi.encodeWithSelector(FixedPriceSwap.FixedPriceSwapWrongDirection.selector, address(SUSDS), address(yes))
+            abi.encodeWithSelector(
+                FixedPriceSwap.FixedPriceSwapWrongDirection.selector, address(COLLATERAL), address(yes)
+            )
         );
-        _swap(address(SUSDS), address(yes), 10e18);
+        _swap(address(COLLATERAL), address(yes), 10e18);
     }
 
     function test_rule_otherSideTokenReverts() public {
         vm.expectRevert();
-        _swap(address(no), address(SUSDS), 10e18);
+        _swap(address(no), address(COLLATERAL), 10e18);
     }
 
     function test_rule_overTheCapReverts() public {
         ISwapVM.Order memory small = _order(maker, yes, 0.2e18);
         _ship(small, yes, 10e18); // pays at most 10 sUSDS
         vm.expectRevert();
-        honest.swap(small, address(yes), address(SUSDS), 100e18, _takerData(address(honest), true)); // asks 20
+        honest.swap(small, address(yes), address(COLLATERAL), 100e18, _takerData(address(honest), true)); // asks 20
     }
 
     function test_rule_takerMustDeliverTheToken() public {
         FreeloaderTaker freeloader = new FreeloaderTaker(AQUA, router);
         vm.expectRevert(abi.encodeWithSelector(SwapVM.AquaBalanceInsufficientAfterTakerPush.selector, 0, 0, 100e18, 0));
         vm.prank(address(this));
-        freeloader.swap(order, address(yes), address(SUSDS), 100e18, _takerData(address(freeloader), true));
-        assertEq(SUSDS.balanceOf(maker), CAP, "maker keeps every sUSDS");
+        freeloader.swap(order, address(yes), address(COLLATERAL), 100e18, _takerData(address(freeloader), true));
+        assertEq(COLLATERAL.balanceOf(maker), CAP, "maker keeps every sUSDS");
     }
 
     function test_rule_nothingAfterTheDeadline() public {
         vm.warp(block.timestamp + 1 days + 1);
         vm.expectRevert(abi.encodeWithSelector(Controls.DeadlineReached.selector, address(honest), block.timestamp - 1));
-        _swap(address(yes), address(SUSDS), 10e18);
+        _swap(address(yes), address(COLLATERAL), 10e18);
     }
 
     function test_rule_nothingOnceResolved() public {
@@ -103,28 +105,28 @@ contract RulesForkTest is ForkBase {
             abi.encode(uint256(1))
         );
         vm.expectRevert(abi.encodeWithSelector(OnlyUnresolvedCondition.ConditionAlreadyResolved.selector, conditionId));
-        _swap(address(yes), address(SUSDS), 10e18);
+        _swap(address(yes), address(COLLATERAL), 10e18);
     }
 
     function test_rule_othersCannotCancelTheOrder() public {
         address attacker = makeAddr("attacker");
         address[] memory tokens = new address[](2);
         tokens[0] = address(yes);
-        tokens[1] = address(SUSDS);
+        tokens[1] = address(COLLATERAL);
         vm.prank(attacker);
         try AQUA.dock(address(router), strategyHash, tokens) { } catch { }
-        (uint256 amountIn,) = _swap(address(yes), address(SUSDS), 10e18);
+        (uint256 amountIn,) = _swap(address(yes), address(COLLATERAL), 10e18);
         assertEq(amountIn, 10e18, "the maker's order still fills");
     }
 
     function test_rule_cancelledOrderCannotFill() public {
         address[] memory tokens = new address[](2);
         tokens[0] = address(yes);
-        tokens[1] = address(SUSDS);
+        tokens[1] = address(COLLATERAL);
         vm.prank(maker);
         AQUA.dock(address(router), strategyHash, tokens);
         vm.expectRevert();
-        _swap(address(yes), address(SUSDS), 10e18);
-        assertEq(SUSDS.balanceOf(maker), CAP);
+        _swap(address(yes), address(COLLATERAL), 10e18);
+        assertEq(COLLATERAL.balanceOf(maker), CAP);
     }
 }

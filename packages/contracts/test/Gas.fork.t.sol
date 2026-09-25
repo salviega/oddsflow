@@ -18,7 +18,7 @@ contract GasForkTest is ForkBase {
         }
         _fund(carol, 1000e18);
         vm.prank(carol);
-        SUSDS.approve(address(taker), type(uint256).max);
+        COLLATERAL.approve(address(taker), type(uint256).max);
 
         uint256 wanted = count * 50e18;
         vm.prank(carol);

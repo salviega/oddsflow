@@ -6,11 +6,11 @@ export type OrderStatus = 'active' | 'filled' | 'expired' | 'cancelled'
 export type OrderReads = {
 	/** An Aqua `Docked` event exists for the order. */
 	docked: boolean
-	/** Aqua virtual balance of sUSDS left on the order. */
+	/** Aqua virtual balance of sDAI left on the order. */
 	capLeft: bigint
-	/** sUSDS the maker holds now. */
+	/** sDAI the maker holds now. */
 	makerBalance: bigint
-	/** The maker's sUSDS approval to Aqua. */
+	/** The maker's sDAI approval to Aqua. */
 	makerAllowance: bigint
 	/** Unix seconds. */
 	deadline: number

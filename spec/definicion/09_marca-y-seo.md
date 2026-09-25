@@ -12,8 +12,8 @@ El kit llegó hecho para otro nombre, **Floodgate**, con símbolo, paleta, tipog
 Qué se cambió al adaptarlo (26 de septiembre de 2026):
 
 - **Wordmark "oddsflow"**, regenerado con la misma fuente y los mismos parámetros que el original: Barlow SemiBold, 36 px, línea base en y = 45, tracking −0,36. Se calibró reproduciendo "floodgate" hasta que su caja coincidió con la del archivo original al centésimo, y con esos parámetros se contorneó "oddsflow". Contorneado a paths: se ve igual sin la fuente instalada.
-- **OG image:** nuevo wordmark, y "Your USDC" pasa a **"Your sUSDS"**, que es el colateral real ([03](./03_bounties.md#marco)).
-- **`site.ts`:** nombre, URL, repo y descripción; se agregan "Seer" y "Base" a las palabras clave.
+- **OG image:** nuevo wordmark, y "Your USDC" pasa a **"Your sDAI"**, que es el colateral real ([03](./03_bounties.md#marco)).
+- **`site.ts`:** nombre, URL, repo y descripción; se agregan "Seer" y la red ("Gnosis Chain" desde la mudanza del 26 de septiembre) a las palabras clave.
 - **JSON-LD:** `codeRepository` no es una propiedad de `WebApplication` en schema.org; pasa a `sameAs`, y se agrega `isAccessibleForFree`.
 - **`robots.ts`:** se quita `host`, que Google ignora.
 - **Voz:** se agregan "Cancel order" (no "dock") e "Invalid result" (no "INVALID outcome token").
@@ -97,10 +97,10 @@ Aquí es donde una interfaz financiera se rompe primero.
 | --- | --- | --- |
 | Precio | Decimal 0.00–1.00, dos decimales | `0.20` |
 | Probabilidad implícita | En Mist, al lado del precio | `0.20 · 20%` en tablas, `0.20 (20%)` en texto |
-| Monto | sUSDS, dos decimales, miles agrupados, unidad siempre | `1,000.00 sUSDS` |
+| Monto | sDAI, dos decimales, miles agrupados, unidad siempre | `1,000.00 sDAI` |
 | Equivalente en dólares | En Mist, después del monto, con `≈` | `≈ $1,052.40` |
 | Cantidad de tokens | Dos decimales, con el lado | `100.00 YES` |
-| Monto demasiado chico | Umbral, no ceros | `< 0.01 sUSDS` |
+| Monto demasiado chico | Umbral, no ceros | `< 0.01 sDAI` |
 
 El dólar es una ayuda, **nunca la cifra que se firma** ([04 §5](./04_diseno-de-solucion.md#5-pantallas)). Ningún número muestra los 18 decimales de la cadena; el valor exacto está en "Details".
 
@@ -124,13 +124,13 @@ Palabras de lo que hace el usuario, no de cómo funciona el protocolo. La interf
 
 | Momento | Botón |
 | --- | --- |
-| Primera aprobación | `Allow OddsFlow orders to use your sUSDS` |
+| Primera aprobación | `Allow OddsFlow orders to use your sDAI` |
 | Publicar | `Place 2 orders` |
-| Comprar | `Buy 100.00 NO for 80.00 sUSDS` |
+| Comprar | `Buy 100.00 NO for 80.00 sDAI` |
 | Cancelar | `Cancel order` |
-| Cobrar | `Claim 100.00 sUSDS` |
+| Cobrar | `Claim 100.00 sDAI` |
 
-**Errores:** qué pasó y qué hacer. "This order can cover 300.00 sUSDS today — your wallet has less than the order's limit. Add sUSDS or lower the amount." No "Transaction failed". Sin signos de exclamación, sin tono de celebración: es dinero.
+**Errores:** qué pasó y qué hacer. "This order can cover 300.00 sDAI today — your wallet has less than the order's limit. Add sDAI or lower the amount." No "Transaction failed". Sin signos de exclamación, sin tono de celebración: es dinero.
 
 ---
 
@@ -143,17 +143,17 @@ Palabras de lo que hace el usuario, no de cómo funciona el protocolo. La interf
 | Orden | `Active` · `Filled` · `Expired` · `Cancelled` · y, sobre `Active`, la lectura "can cover X today" cuando el saldo real es menor que el tope ([04 §6](./04_diseno-de-solucion.md#6-reglas-de-negocio)) |
 | Transacción | Esperando la firma · enviada, sin confirmar · confirmada (con enlace al explorador) · revertida (con el motivo en palabras) |
 | Datos | Cargando (skeleton, nunca spinner a pantalla completa) · vacío (qué es esto y cómo se empieza) · error de red (qué no se pudo leer, reintentar) · desactualizado (hace cuánto se leyó) |
-| Wallet | Sin conectar (la app se explica igual, con mercados visibles) · red equivocada (cambiar a Base) · sin sUSDS · sin aprobación |
+| Wallet | Sin conectar (la app se explica igual, con mercados visibles) · red equivocada (cambiar a Gnosis) · sin sDAI · sin aprobación |
 
 **El momento de la firma es el pico de cada flujo.** Antes de cada firma, sin scroll y sin jerga, se ve:
 
 | Firma | Qué se mueve | Qué va a pasar | Qué **no** pasa | Qué se puede deshacer |
 | --- | --- | --- | --- | --- |
-| Aprobar sUSDS a Aqua | Nada | Aqua puede usar tu sUSDS solo cuando se llena una de tus órdenes | OddsFlow no recibe permiso sobre tu sUSDS | Revocable en cualquier momento |
-| Publicar órdenes | Nada; paga gas | Cada orden espera en su mercado, a su precio, hasta que vence | Tu sUSDS no sale de la wallet | Cancelar cuando quieras |
-| Comprar | Tu sUSDS | Recibes los tokens en esta transacción, a este precio o mejor | No pagas más que el mínimo que fijaste | **Irreversible** una vez confirmada |
+| Aprobar sDAI a Aqua | Nada | Aqua puede usar tu sDAI solo cuando se llena una de tus órdenes | OddsFlow no recibe permiso sobre tu sDAI | Revocable en cualquier momento |
+| Publicar órdenes | Nada; paga gas | Cada orden espera en su mercado, a su precio, hasta que vence | Tu sDAI no sale de la wallet | Cancelar cuando quieras |
+| Comprar | Tu sDAI | Recibes los tokens en esta transacción, a este precio o mejor | No pagas más que el mínimo que fijaste | **Irreversible** una vez confirmada |
 | Cancelar | Nada; paga gas | La orden deja de poder llenarse | No afecta lo ya llenado | No: hay que publicarla de nuevo |
-| Cobrar | Tokens ganadores → sUSDS | Recibes sUSDS por tus tokens ganadores | — | **Irreversible** |
+| Cobrar | Tokens ganadores → sDAI | Recibes sDAI por tus tokens ganadores | — | **Irreversible** |
 
 "Irreversible" se escribe con esa palabra. Y el riesgo de la orden con precio viejo del [04](./04_diseno-de-solucion.md#6-reglas-de-negocio) aparece al publicar, no en un tooltip.
 
