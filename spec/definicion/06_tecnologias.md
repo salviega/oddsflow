@@ -48,6 +48,7 @@ Workspaces de pnpm y no Turborepo: con dos paquetes y una app, `pnpm -r` alcanza
 | **wagmi** | 3.7 | Conexión de wallet, lectura con caché y escritura. `useSendCalls` para publicar varias órdenes en una confirmación (EIP-5792) |
 | **TanStack Query** | 5.x | Lo usa wagmi por debajo; también para el libro de órdenes (logs de Aqua) y su refresco |
 | **Tailwind CSS** | 4.3 | Estilos. Configuración por CSS, tokens en `globals.css` |
+| **Barlow** (`next/font/google`) | 400 · 500 · 600 | La tipografía de la marca ([09 §4](./09_marca-y-seo.md#4-tipografía)). Se sirve desde el propio dominio, sin salto de diseño |
 | **lucide-react** | 1.48 | Iconos. Los componentes son funciones propias en `apps/web/src/components/`; no hace falta una librería de componentes para cinco pantallas |
 
 **Conectar la wallet sin kit.** Los conectores de wagmi (`injected` y `baseAccount`) más un botón propio. Base Account es la que asegura `wallet_sendCalls` atómico en la demo ([05 §10](./05_stack-y-arquitectura.md#10-riesgos-técnicos)).
@@ -103,6 +104,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 | `BASE_RPC_URL` | `packages/contracts` (fork y despliegue), CI | Sensible si lleva API key. Secreto de GitHub en CI |
 | `NEXT_PUBLIC_BASE_RPC_URL` | `apps/web` | Pública por definición: usar una key restringida por dominio |
 | `ETHERSCAN_API_KEY` | `packages/contracts` (verificación) | Sensible |
+| `NEXT_PUBLIC_SITE_URL` | `apps/web/src/lib/site.ts` (canonical, Open Graph, sitemap) | Pública. Sin ella, `https://oddsflow.vercel.app` ([09 §10](./09_marca-y-seo.md#10-pendientes)) |
 
 **La llave de despliegue no vive en `.env`.** Se importa una sola vez con `cast wallet import deployer --interactive` al keystore cifrado de Foundry, y los scripts usan `--account deployer`. Es dinero real en Base.
 
