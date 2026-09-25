@@ -1,9 +1,16 @@
 import { getOpenMarkets } from '@/lib/markets'
 
-// One read of the open markets per minute for everyone, instead of hundreds
-// of RPC calls from every visitor's browser.
-export const revalidate = 60
+// Rendered per request, never at build time: a slow RPC must not break a
+// deploy. Vercel's CDN keeps each answer for a minute, so everyone shares one
+// read of the markets instead of hundreds of RPC calls per visitor.
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-	return Response.json(await getOpenMarkets())
+	try {
+		return Response.json(await getOpenMarkets(), {
+			headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+		})
+	} catch {
+		return Response.json({ error: 'Could not read the markets from Base' }, { status: 503 })
+	}
 }

@@ -4,7 +4,8 @@ import { formatOpening } from '@/lib/dates'
 import { getOpenMarkets } from '@/lib/markets'
 import { site } from '@/lib/site'
 
-export const revalidate = 60
+// Rendered per request so the build never depends on the RPC; see /api/markets.
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
 	let markets: Awaited<ReturnType<typeof getOpenMarkets>> = []
