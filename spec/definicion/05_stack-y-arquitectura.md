@@ -148,7 +148,7 @@ Los dos redondeos favorecen al maker. Los registros de saldo que SwapVM trae de 
 
 Al final exige que la contraparte haya recibido al menos su mínimo; si no, revierte todo.
 
-**Cuántas órdenes recorre una compra.** Cada orden agrega un `swap`, un `split` y varias transferencias. Se mide en la fase de contratos del [07](./07_plan-de-trabajo.md) y se fija un máximo; hasta entonces, 5.
+**Cuántas órdenes recorre una compra: hasta 10.** Medido en un fork de Base el 26 de septiembre (`GasForkTest`): 909 k de gas con 1 orden, 2,13 M con 3, 3,36 M con 5 y 6,42 M con 10; cada orden suma ~610 k, casi todo del split en Seer. Con el gas de Base a 0,006 gwei y ETH a ~$2 680, recorrer 10 órdenes cuesta unos $0,10. La web manda como mucho 10.
 
 ---
 
@@ -162,7 +162,7 @@ No hay cuentas ni sesiones: la identidad es la wallet, y los permisos viven en l
 | **Contraparte / vendedor** | Llamar al router o a `OddsFlowTaker` para llenar órdenes, dentro de lo que el programa acepta | Cambiar el precio, la dirección, el tope o el vencimiento de una orden |
 | **Router de OddsFlow** | `pull` y `push` sobre estrategias publicadas para él | Mover fondos de estrategias publicadas para otro `app`; salirse del programa de la orden |
 | **`OddsFlowTaker`** | Usar, dentro de una transacción, el sUSDS que la contraparte le aprobó | Retener fondos entre transacciones; tocar el sUSDS de un apostador, sobre el que no tiene aprobación |
-| **Dueño del router** (`Rescuable` de SwapVM) | Rescatar tokens que queden por error en el propio router | Tocar fondos de un maker, que nunca están en el router. Se despliega con un dueño sin poder práctico (ver §11) |
+| **Dueño del router** (`Rescuable` de SwapVM) | Nadie: la propiedad se renuncia al desplegar (§11) | — |
 
 ---
 
@@ -205,10 +205,10 @@ Ordenados por cuánto daño hacen si se materializan.
 
 ## 11. Pendientes
 
-- **Dueño del router.** `Rescuable` exige un dueño. Opciones: una dirección sin llave conocida, o nuestra wallet con el compromiso escrito de no usarlo. Decidir antes del despliegue.
-- **Bond mínimo y timeout de Reality.eth en Base** para el mercado de la demo (la app de Seer define un `MIN_BOND` por red).
+- ~~**Dueño del router.**~~ `Ownable` no acepta la dirección cero, así que `Deploy.s.sol` despliega con la cuenta `deployer` como dueña y llama a `renounceOwnership()` en la misma ejecución: nadie puede usar `rescueFunds`.
+- ~~**Bond mínimo y timeout de Reality.eth en Base**~~ Bond mínimo 0,0005 ETH (el que usa la app de Seer en Base); timeout de 302 400 s (3,5 días), fijado por `MarketFactory.questionTimeout()`.
 - **Aprobación de la contraparte.** Si sUSDS en Base admite `permit` (EIP-2612), la primera compra también es una sola firma; si no, es `approve` + compra, agrupadas con `wallet_sendCalls`.
-- **Máximo de órdenes por compra** (§6), a medir.
+- ~~**Máximo de órdenes por compra** (§6), a medir.~~ 10.
 - Confirmar con 1inch las preguntas del [feedback](../feedback/01_1inch.md#preguntas-abiertas-para-los-mentores).
 
 **Direcciones en Base** (a fijar en `packages/core`):

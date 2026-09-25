@@ -36,6 +36,18 @@ Versioning cadence, while pre-1.0:
 - `OddsFlowRouter`: `AquaSwapVMRouter` from 1inch/swap-vm v1.0.2 with the two
   opcodes appended after the official ones, so every official opcode keeps
   its index.
+- `OddsFlowTaker`: the counterparty's side in one transaction. `buy` fills
+  orders for the opposite side by minting on Seer — the maker's sUSDS and the
+  buyer's go into one split, each gets their side, and invalid-result tokens
+  are shared by contribution — sweeping orders best first, capping each fill
+  to what the maker can pay today and skipping the ones that cannot. `sell`
+  fills orders with outcome tokens the seller already holds. Evidence:
+  `OddsFlowTakerForkTest` (20 tests on a Base fork, the taker ends every
+  transaction holding nothing) and `RulesForkTest` (the spec 05 §5 rules, each
+  one reverting).
+- Deployment scripts: `Deploy.s.sol` deploys the router and `OddsFlowTaker`
+  and renounces the router's ownership in the same run; `CreateDemoMarket.s.sol`
+  creates the binary demo market on Seer. Both simulated against Base.
 - Monorepo scaffold: Next.js web app built around the brand and SEO files,
   `packages/core` with price and amount formatting and the Base addresses,
   Foundry contracts pinned to the 1inch tags, CI on pull requests, and

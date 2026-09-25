@@ -84,7 +84,7 @@ Formularios con estado de React y `useActionState`; sin librería de formularios
 
 **Cubrimiento: 90 % o más en `packages/core` y en `packages/contracts/src`.** Pruebas unitarias; escribirlas antes o después del código queda a criterio de quien lo escribe. En `packages/core`, `vitest.config.ts` declara `coverage.thresholds`, así que `pnpm test` falla solo bajo el piso. En contratos, Foundry no tiene umbral propio: `pnpm coverage:contracts` corre `forge coverage --ir-minimum` y `scripts/check-coverage.mjs` falla si la fila *Total* baja de 90 % en líneas, sentencias, ramas o funciones. El piso no reemplaza a las pruebas nombradas del [05 §5](./05_stack-y-arquitectura.md#5-la-regla-que-no-puede-fallar-el-susds-del-apostador-nunca-sale-sin-sus-tokens-al-precio-que-firmó): las dos cosas son obligatorias.
 
-**`require` con error personalizado no se mide bien con `--ir-minimum`.** Foundry no instrumenta esas ramas (ni siquiera el camino que pasa): con `require(cond, Error())` en los opcodes, las ramas daban 41,67 % con todas las pruebas de reversión en verde. Con `if (!cond) revert Error();` dan 100 %. En `packages/contracts/src` se escribe así.
+**`require` con error personalizado no se mide bien con `--ir-minimum`.** Foundry no instrumenta esas ramas (ni siquiera el camino que pasa): con `require(cond, Error())` en los opcodes, las ramas daban 41,67 % con todas las pruebas de reversión en verde. Con `if (!cond) revert Error();` dan 100 %. En `packages/contracts/src` se escribe así. Y `CoreInvariants` de SwapVM no compila con `--ir-minimum` ("stack too deep"): `pnpm coverage:contracts` lo excluye con `--skip`, y `pnpm test:contracts` lo corre con la optimización completa.
 
 ---
 

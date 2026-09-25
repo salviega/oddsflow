@@ -17,7 +17,7 @@ next-env.d.ts
 packages/contracts/cache/
 packages/contracts/out/
 packages/contracts/broadcast/*/31337/
-packages/contracts/broadcast/*/dry-run/
+packages/contracts/broadcast/*/*/dry-run/
 
 # --- Env and secrets ---
 .env
