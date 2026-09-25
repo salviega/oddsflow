@@ -41,15 +41,21 @@ Los mercados no se construyen: se usan los de **Seer**, que no es sponsor del ha
 - [Aqua — contratos](https://github.com/1inch/aqua)
 - [Aqua SDK (TypeScript)](https://github.com/1inch/sdks/tree/master/typescript/aqua)
 
-**Qué significa para [Nombre].** Es el producto completo, no una integración añadida. La frase central del [02](./02_solucion.md) ("el mismo saldo respalda todas sus órdenes a la vez") es literalmente lo que hace Aqua. Cada orden del apostador es un programa de SwapVM sobre el par colateral ↔ token de resultado de Seer, y la ejecución ocurre cuando el router de la contraparte la toma. La demo muestra lo que pide el track: una orden llenándose onchain con transferencias reales, y el saldo disponible de las demás órdenes bajando en la misma transacción.
+**Qué significa para OddsFlow.** Es el producto completo, no una integración añadida. La frase central del [02](./02_solucion.md) ("el mismo saldo respalda todas sus órdenes a la vez") es literalmente lo que hace Aqua: cada orden es una estrategia con su propio saldo virtual de sUSDS, y todas cuentan con el mismo saldo real.
 
-_Pendiente: si las órdenes se expresan solo con las instrucciones existentes de SwapVM, o si se agrega una instrucción propia que verifique en Seer que el mercado no esté resuelto antes de ejecutar. Esto último reemplazaría el vencimiento fijo y sumaría puntos en el criterio de SwapVM._
+**Cómo se escribe una orden sobre los contratos oficiales.** El router oficial en Base (`0x111111338c…c0de`, dominio EIP-712 "1inch SwapVM v1.0", versión 1.0.2, verificado onchain) es el `AquaSwapVMRouter`, que solo ejecuta el subconjunto de instrucciones de Aqua: curvas AMM, `Deadline`, saltos, comisiones y `Extruction`. **No tiene `LimitSwap` ni invalidadores** ([SDK de SwapVM](https://github.com/1inch/sdks/tree/master/typescript/swap-vm), sección de `aquaInstructions`). Así que una orden a precio fijo no se puede escribir con las instrucciones de fábrica, y se resuelve con `Extruction`, que delega el cálculo del intercambio a un contrato elegido por el maker:
+
+- `Deadline` corta la orden en su vencimiento.
+- `Extruction` llama a un contrato propio de OddsFlow, sin dueño y sin actualización, que fija el precio de la orden, solo acepta la dirección token de resultado → sUSDS, y rechaza la ejecución si el mercado de Seer ya está resuelto.
+- El tope lo hace cumplir Aqua: `pull` descuenta el saldo virtual de la estrategia y revierte si no alcanza.
+
+Es la instrucción propia que el track premia, puesta en el punto de extensión que SwapVM ofrece para eso, sin redesplegar el router: se usan los contratos oficiales tal cual. La demo muestra lo que pide el track: una compra llenando una o varias órdenes onchain con transferencias reales, y lo que las demás órdenes del mismo apostador pueden cubrir bajando en la misma transacción.
 
 ---
 
 ## Track descartado
 
-**Curvegrid — Best Digital Asset Dashboard ($1.000):** pide un dashboard como producto principal: análisis de portafolio, RWA, tesorería o vistas cross-chain. En [Nombre], el panel del apostador (órdenes activas, saldo disponible, posiciones por cobrar) es una pieza secundaria del flujo. Convertirlo en un dashboard competitivo exigiría construir analítica que no resuelve nada del [01](./01_contexto-y-problema.md). Solo se reconsidera si ese panel sale naturalmente completo al final.
+**Curvegrid — Best Digital Asset Dashboard ($1.000):** pide un dashboard como producto principal: análisis de portafolio, RWA, tesorería o vistas cross-chain. En OddsFlow, el panel del apostador (órdenes activas, saldo disponible, posiciones por cobrar) es una pieza secundaria del flujo. Convertirlo en un dashboard competitivo exigiría construir analítica que no resuelve nada del [01](./01_contexto-y-problema.md). Solo se reconsidera si ese panel sale naturalmente completo al final.
 
 ---
 
@@ -66,4 +72,5 @@ _Pendiente: si las órdenes se expresan solo con las instrucciones existentes de
 - Confirmar qué incluyen los otros $2.000 del premio total de 1inch ($7.000), además de este track.
 - ~~Decidir entre fork de Base y Base Sepolia.~~ Base mainnet: Aqua no tiene testnet y redesplegar Aqua + Seer en Sepolia sería más trabajo que el gas real. Ver el marco.
 - Confirmar con los mentores de 1inch si operar sobre mercados de Seer cumple con "posición DeFi sofisticada", o si esperan que la lógica del mercado también viva en la app.
-- Instrucción propia de SwapVM: sí o no (ver sección 1).
+- ~~Instrucción propia de SwapVM: sí o no.~~ Sí, y obligada: el router oficial no tiene `LimitSwap`. Va por `Extruction` (ver sección 1).
+- **Compuerta del día 1:** comprobar en un fork de Base que una estrategia `Deadline` + `Extruction` se ejecuta en el router oficial con el precio que fija el contrato propio, tanto en `quote` como en `swap`. Si no, la salida permitida por el track es redesplegar un SwapVM con `LimitSwap` sobre el Aqua oficial.

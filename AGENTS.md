@@ -1,9 +1,7 @@
-# [Project name]
+# OddsFlow
 
-<!-- [ADAPT] One or two sentences: what the project is and what problem it
-     solves. Same pitch as spec/definicion/02_solucion.md, summarized. -->
-
-[One or two sentence elevator pitch.]
+Bet on many prediction markets with the same money, committing it only when
+a counterparty shows up.
 
 The definition lives in `spec/definicion/` (numbered documents);
 `07_plan-de-trabajo.md` is the phased plan and doubles as the progress log —

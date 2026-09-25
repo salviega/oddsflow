@@ -1,4 +1,4 @@
-# [Nombre del proyecto] — Documentación
+# OddsFlow — Documentación
 
 <!-- Cómo llenar este archivo: es el índice, no el contenido. Una frase que
      defina el proyecto (el "elevator pitch"), y un párrafo de contexto: qué
