@@ -7,6 +7,7 @@ import { ConnectButton } from './ConnectButton'
 const nav = [
 	{ href: '/', label: 'Markets' },
 	{ href: '/orders/new', label: 'New orders' },
+	{ href: '/markets/new', label: 'Create market' },
 	{ href: '/orders', label: 'My orders' },
 	{ href: '/positions', label: 'Positions' },
 ]

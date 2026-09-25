@@ -144,6 +144,7 @@ No es una entidad guardada: es el saldo de tokens SÍ / NO / inválido de una wa
 | **Mercados** | Mercados binarios abiertos de Seer en Gnosis, con el mejor precio de SÍ y de NO que ofrecen las órdenes de OddsFlow, como probabilidad (0.20 = 20 %) | Abrir un mercado |
 | **Mercado** | Pregunta, desde cuándo acepta respuestas y si ya tiene alguna, órdenes por lado con su precio y cuánto pueden cubrir hoy | Comprar un lado (flujo 4.2) o vender tokens que ya tiene (4.3) |
 | **Nuevas órdenes** | Lista editable de mercado · lado · precio · tope, y el saldo real de sDAI debajo | Publicar las órdenes (flujo 4.1) |
+| **Crear mercado** | Pregunta SÍ/NO, desde cuándo se puede responder, categoría; resumen de la firma (público e irreversible) | Crear el mercado en Seer y abrir su página |
 | **Mis órdenes** | Cada orden con estado, llenado / tope, vencimiento y cuánto podría cubrir hoy con el saldo real | Cancelar una orden |
 | **Posiciones** | Tokens SÍ / NO / inválido por mercado, y cuáles ya se pueden canjear | Cobrar |
 

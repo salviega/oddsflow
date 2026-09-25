@@ -61,6 +61,12 @@ Versioning cadence, while pre-1.0:
 
 ### Added
 
+- Create market page: anyone can open a YES/NO market on Seer (Gnosis, sDAI)
+  from OddsFlow with their own wallet, through Seer's permissionless
+  `MarketFactory`, and land on its page to place orders. Evidence: created
+  "Will ETH trade above $3,000 at 00:00 UTC on 31 December 2026?" from the
+  page on the local Gnosis fork; the page read it back from chain.
+
 - OddsFlow on Base mainnet. `OddsFlowRouter` at
   [`0xB874…7140`](https://basescan.org/address/0xB8747B3e2F90154420165FB2fc4707D638797140)
   (tx [`0xdd1a…eeda`](https://basescan.org/tx/0xdd1affa2fe922dda56f32086db78b191c2008d3113371f7cf15d04034901eeda)),

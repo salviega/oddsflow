@@ -62,3 +62,47 @@ export const realityAbi = [
 		outputs: [{ type: 'uint32' }],
 	},
 ] as const
+
+/** Seer's MarketFactory: permissionless market creation. */
+export const marketFactoryAbi = [
+	{
+		type: 'function',
+		name: 'createCategoricalMarket',
+		stateMutability: 'nonpayable',
+		inputs: [
+			{
+				name: 'params',
+				type: 'tuple',
+				components: [
+					{ name: 'marketName', type: 'string' },
+					{ name: 'outcomes', type: 'string[]' },
+					{ name: 'questionStart', type: 'string' },
+					{ name: 'questionEnd', type: 'string' },
+					{ name: 'outcomeType', type: 'string' },
+					{ name: 'parentOutcome', type: 'uint256' },
+					{ name: 'parentMarket', type: 'address' },
+					{ name: 'category', type: 'string' },
+					{ name: 'lang', type: 'string' },
+					{ name: 'lowerBound', type: 'uint256' },
+					{ name: 'upperBound', type: 'uint256' },
+					{ name: 'minBond', type: 'uint256' },
+					{ name: 'openingTime', type: 'uint32' },
+					{ name: 'tokenNames', type: 'string[]' },
+				],
+			},
+		],
+		outputs: [{ type: 'address' }],
+	},
+	{
+		type: 'event',
+		name: 'NewMarket',
+		inputs: [
+			{ name: 'market', type: 'address', indexed: true },
+			{ name: 'marketName', type: 'string', indexed: false },
+			{ name: 'parentMarket', type: 'address', indexed: false },
+			{ name: 'conditionId', type: 'bytes32', indexed: false },
+			{ name: 'questionId', type: 'bytes32', indexed: false },
+			{ name: 'questionsIds', type: 'bytes32[]', indexed: false },
+		],
+	},
+] as const
